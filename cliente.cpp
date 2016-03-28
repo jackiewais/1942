@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <arpa/inet.h>
+#include "Logger/Log.h"
 using namespace std;
 
 
@@ -22,7 +23,10 @@ int main()
  char *respuestaServer[2000];
 
 
-
+// Inicializar el log.
+Log log;
+log.createFile();
+log.writeLine("CREANDO SOCKET... ");
  //CREO EL SOCKET.
  cout << "CREANDO SOCKET... ";
 socketCliente =  socket(AF_INET , SOCK_STREAM , 0);
