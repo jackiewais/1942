@@ -19,6 +19,7 @@ Util util;
 
 void Log::writeLine(string line)
 {
+	cout << line << std::endl;
     std::ofstream log_file(logFile, std::ios_base::out | std::ios_base::app );
 
     log_file << std::endl;
@@ -27,6 +28,8 @@ void Log::writeLine(string line)
 
 void Log::writeErrorLine(string line)
 {
+
+	cout << line;
     std::ofstream log_file(logErrorFile, std::ios_base::out | std::ios_base::app );
 
     log_file << std::endl;
@@ -46,6 +49,7 @@ void Log::writeBlock(list<string> lineList)
     pos = lineList.begin();
     while( pos != lineList.end())
     {
+    	cout << *pos;
     	log_file << std::endl;
     	log_file << util.currentDateTime() + " || " << *pos << std::endl;
     	pos++;
@@ -59,6 +63,7 @@ void Log::writeErrorBlock(list<string> lineList)
     pos = lineList.begin();
     while( pos != lineList.end())
     {
+    	cout << *pos;
     	log_file << std::endl;
     	log_file << util.currentDateTime() + " || " << *pos << std::endl;
     	pos++;
