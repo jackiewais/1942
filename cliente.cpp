@@ -29,7 +29,6 @@ int socketCliente;
 int selected;
 struct sockaddr_in server;
 char *mensaje;
-char *respuestaServer;
 
 // ==============================================================================
 
@@ -47,16 +46,16 @@ list<menuItem> generateMenu()
 
 	menuItem item;
 	item.Id = "Conectar";
-	item.Tipo = "192.168.0.11";
-	item.Valor = "8888";
+	item.Tipo = "127.0.0.1";
+	item.Valor = "5001";
 	menu.push_back(item);
 	item.Id = "Desconectar";
-	item.Tipo = "192.168.0.11";
-	item.Valor = "8888";
+	item.Tipo = "127.0.0.1";
+	item.Valor = "5001";
 	menu.push_back(item);
 	item.Id = "Salir";
-	item.Tipo = "192.168.0.11";
-	item.Valor = "8888";
+	item.Tipo = "127.0.0.1";
+	item.Valor = "5001";
 	menu.push_back(item);
 
 	item.Id = "Mensaje1";
@@ -69,8 +68,8 @@ list<menuItem> generateMenu()
 	menu.push_back(item);
 
 	item.Id = "Ciclar";
-	item.Tipo = "192.168.0.1";
-	item.Valor = "65532";
+	item.Tipo = "127.0.0.1";
+	item.Valor = "5001";
 	menu.push_back(item);
 
 	return menu;
@@ -111,7 +110,6 @@ int connect(menuItem menuSelected)
 		return -1;
 	} else {
 		log.writeLine("PUDIMOS CREAR EL SOCKET. ");
-		return 0;
 	}
 
 	//INICIALIZO LAS VARIABLES DEL STRUCK SOCKADDR_IN
@@ -163,6 +161,9 @@ int finish()
 // ENVIAMOS UN MENSAJE SEGÚN LA INFORMACIÓN OBTENIDA PREVIAMENTE DEL XML.
 int sendMessage(menuItem menuSelected)
 {
+
+	char respuestaServer[255];
+
 	cout << "-----" << std::endl;
 	cout << "Enviamos el mensaje: " << menuSelected.Id << endl;
 	cout << "Tipo:" << menuSelected.Tipo << std::endl;
@@ -171,6 +172,7 @@ int sendMessage(menuItem menuSelected)
 
 	// MANDO UN MENSAJE
 	log.writeLine("ENVIANDO DATOS...");
+	mensaje = strdup(menuSelected.Valor.c_str());
 	if( send(socketCliente , mensaje , strlen(mensaje) , 0) < 0)
 	{
 		log.writeLine("ERROR AL ENVIAR DATOS...");
@@ -181,14 +183,13 @@ int sendMessage(menuItem menuSelected)
 
 	// RECIBIENDO INFORMACION
 	log.writeLine("RECIBIENDO INFORMACION...");
-	if( recv(socketCliente, respuestaServer , 2000 , 0) < 0)
+	if( recv(socketCliente, respuestaServer , 255 , 0) < 0)
 	{
 		log.writeLine("ERROR AL RECIBIDR LOS DATOS.");
 		return -1;
 	}
 	log.writeLine("HEMOS RECIBIDO LA SIGUIENTE RESPUESTA DEL SERVIDOR:");
-	string str(respuestaServer);
-	log.writeLine(str);
+	log.writeLine(respuestaServer);
 
 	return 0;
 }
