@@ -13,6 +13,7 @@
 #include "Logger/Log.h"
 using namespace std;
 
+
 // ==============================================================================
 
 struct  menuItem {
@@ -26,7 +27,6 @@ Log log;
 
 // Variables locales relacionadas con el socket.
 int socketCliente;
-int selected;
 struct sockaddr_in server;
 char *mensaje;
 
@@ -45,31 +45,24 @@ list<menuItem> generateMenu()
 	// Y RESGUARDO POR EJEMPLO EL IP:PUERTO
 
 	menuItem item;
-	item.Id = "Conectar";
-	item.Tipo = "127.0.0.1";
-	item.Valor = "5001";
-	menu.push_back(item);
-	item.Id = "Desconectar";
-	item.Tipo = "127.0.0.1";
-	item.Valor = "5001";
-	menu.push_back(item);
 	item.Id = "Salir";
-	item.Tipo = "127.0.0.1";
-	item.Valor = "5001";
+	item.Tipo = "";
+	item.Valor = "";
 	menu.push_back(item);
 
 	item.Id = "Mensaje1";
 	item.Tipo = "INT";
 	item.Valor = "10";
 	menu.push_back(item);
+
 	item.Id = "Mensaje2";
 	item.Tipo = "STRING";
 	item.Valor = "hola mundo";
 	menu.push_back(item);
 
 	item.Id = "Ciclar";
-	item.Tipo = "127.0.0.1";
-	item.Valor = "5001";
+	item.Tipo = "";
+	item.Valor = "";
 	menu.push_back(item);
 
 	return menu;
@@ -95,10 +88,10 @@ void printMenu(list<menuItem> items)
 
 
 // INVOCACIÓN A LA LÓGICA PARA CONECTARNOS AL SERVIDOR.
-int connect(menuItem menuSelected)
+int connect(char* ip, const char* port)
 {
 	cout << "-----" << std::endl;
-	cout << "Me intento conectar a: " << menuSelected.Tipo << ":" << menuSelected.Valor << std::endl;
+	cout << "Me intento conectar a: " << ip << ":" << port << std::endl;
 	cout << "-----" << std::endl;
 
 	 //CREO EL SOCKET.
@@ -115,11 +108,11 @@ int connect(menuItem menuSelected)
 	//INICIALIZO LAS VARIABLES DEL STRUCK SOCKADDR_IN
 	server.sin_family = AF_INET;
 	//EN VALOR RESGUARDE EL PUERTO.
-	const char* portChar = menuSelected.Valor.c_str();
+	const char* portChar = port;
 	unsigned short portNumber = (unsigned short) strtoul(portChar, NULL, 0);
 	server.sin_port = htons(portNumber);
 	//EN TIPO RESGUARDE LA IP DEL SERVIDOR.
-	const char* ipChar = menuSelected.Tipo.c_str();
+	const char* ipChar = ip;
 	server.sin_addr.s_addr = inet_addr(ipChar);
 
 	//HAGO CONNECT CON EL SERVER
@@ -135,10 +128,10 @@ int connect(menuItem menuSelected)
 
 
 // INVOCACIÓN A LA LÓGICA PARA DESCONECTARNOS DEL SERVIDOR.
-int disconnect(menuItem menuSelected)
+int disconnect()
 {
 	cout << "-----" << std::endl;
-	cout << "Me desconecto de: " << menuSelected.Tipo << ":" << menuSelected.Valor << std::endl;
+	cout << "Desconectando del servidor" << std::endl;
 	cout << "-----" << std::endl;
 
 	// CIERRO SOCKET
@@ -202,7 +195,7 @@ int loop(list<menuItem> items)
 	cout << "Iniciamos la sentencia Ciclar:" << std::endl;
     list<menuItem>::iterator pos;
     pos = items.begin();
-    int identificador = 1;
+    unsigned int identificador = 1;
 
     while( pos != items.end())
     {
@@ -216,26 +209,27 @@ int loop(list<menuItem> items)
 
 
 // SEGÚN LO QUE ELIJA EL USUARIO, PROCESAMOS UNA OPCIÓN U OTRA.
-int processResponse(int select)
+int processInput(unsigned int input)
 {
     list<menuItem>::iterator pos;
     pos = menu.begin();
-    int identificador = 1;
+    unsigned int identificador = 1;
     menuItem menuSelected;
     while( pos != menu.end())
     {
-    	if(identificador == select) menuSelected = *pos;
+    	if(identificador == input) menuSelected = *pos;
     	identificador++;
     	pos++;
     }
 
-    int response = 0;
+    int response;
 
-	if(select == 1) response = connect(menuSelected);
-	if(select == 2) response = disconnect(menuSelected);
-	if(select == 3) response = finish();
-	if(select > 3 && select < menu.size()) response = sendMessage(menuSelected);
-	if(select >= menu.size()) response = loop(menu);
+	if(input == 0)
+		response = finish();
+	else if(input < menu.size())
+		response = sendMessage(menuSelected);
+	else						//input no válido
+		response = loop(menu);
 
 	return response;
 }
@@ -243,6 +237,8 @@ int processResponse(int select)
 
 // METODO PARA PROBAR LAS EJECUCIONES DE LOS MÉTODOS DEL MENU Y EL LOG.-
 void metodoPrueba(){
+
+	unsigned int input;
 
 	cout << "METODO EJEMPLO DE PRUEBA RÁPIDO" << endl << endl;
 
@@ -267,21 +263,35 @@ void metodoPrueba(){
 	{
 		printMenu(menu);
 		cout << "Por favor, ingrese una de las siguientes opciones numéricas:" << endl;
-		cin >> selected;
-		myResponse = processResponse(selected);
+		cin >> input;
+		myResponse = processInput(input);
 	}
 
 	cout << "FIN DEL METODO EJEMPLO DE PRUEBA RÁPIDO" << endl << endl;
 }
 // ==============================================================================
 
-int main()
+int main(int argc, char *argv[])
 {
 	// Inicializar el log.
 	log.createFile();
+	char *ip;
+	char const *port = "5001";
+
+	if (argc!=3 && argc!=2)
+		log.writeLine("Cantidad de parámetros inválido");
+
+	ip = argv[1];
+
+	if (argc == 3)
+		port = argv[2];
+
+	connect(ip, port);
 
 	// para probar, luego borrar.
 	metodoPrueba();
+
+	disconnect();
 
 	return 0;
 }
