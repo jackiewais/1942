@@ -22,6 +22,9 @@ struct  menuItem {
     string Valor;
 };
 
+unsigned short portNumber;
+const char* ipChar;
+
 list<menuItem> menu;
 Log log;
 
@@ -45,6 +48,17 @@ list<menuItem> generateMenu()
 	// Y RESGUARDO POR EJEMPLO EL IP:PUERTO
 
 	menuItem item;
+
+	item.Id = "Conectar";
+	item.Tipo = "";
+	item.Valor = "";
+	menu.push_back(item);
+
+	item.Id = "Desconectar";
+	item.Tipo = "";
+	item.Valor = "";
+	menu.push_back(item);
+
 	item.Id = "Salir";
 	item.Tipo = "";
 	item.Valor = "";
@@ -88,10 +102,10 @@ void printMenu(list<menuItem> items)
 
 
 // INVOCACIÓN A LA LÓGICA PARA CONECTARNOS AL SERVIDOR.
-int connect(char* ip, const char* port)
+int connect()
 {
 	cout << "-----" << std::endl;
-	cout << "Me intento conectar a: " << ip << ":" << port << std::endl;
+	cout << "Me intento conectar a: " << ipChar << ":" << portNumber << std::endl;
 	cout << "-----" << std::endl;
 
 	 //CREO EL SOCKET.
@@ -108,11 +122,8 @@ int connect(char* ip, const char* port)
 	//INICIALIZO LAS VARIABLES DEL STRUCK SOCKADDR_IN
 	server.sin_family = AF_INET;
 	//EN VALOR RESGUARDE EL PUERTO.
-	const char* portChar = port;
-	unsigned short portNumber = (unsigned short) strtoul(portChar, NULL, 0);
 	server.sin_port = htons(portNumber);
 	//EN TIPO RESGUARDE LA IP DEL SERVIDOR.
-	const char* ipChar = ip;
 	server.sin_addr.s_addr = inet_addr(ipChar);
 
 	//HAGO CONNECT CON EL SERVER
@@ -224,7 +235,11 @@ int processInput(unsigned int input)
 
     int response;
 
-	if(input == 0)
+	if(input == 1)
+		response = connect();
+	else if (input == 2)
+		response = disconnect();
+	else if (input == 3)
 		response = finish();
 	else if(input < menu.size())
 		response = sendMessage(menuSelected);
@@ -275,18 +290,8 @@ int main(int argc, char *argv[])
 {
 	// Inicializar el log.
 	log.createFile();
-	char *ip;
-	char const *port = "5001";
-
-	if (argc!=3 && argc!=2)
-		log.writeLine("Cantidad de parámetros inválido");
-
-	ip = argv[1];
-
-	if (argc == 3)
-		port = argv[2];
-
-	connect(ip, port);
+	portNumber = 5001;
+	ipChar = "192.168.0.7";
 
 	// para probar, luego borrar.
 	metodoPrueba();
