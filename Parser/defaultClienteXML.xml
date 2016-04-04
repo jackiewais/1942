@@ -1,0 +1,13 @@
+<Cliente>
+	<conexion>
+		<IP>192.168.0.1</IP>
+		<puerto>15636</puerto></conexion>
+	<mensaje>
+		<id>1</id>
+		<tipo>INT</tipo>
+		<valor>1</valor></mensaje>
+	<mensaje>
+		<id>2</id>
+		<tipo>String</tipo>
+		<valor>hola mundo</valor>
+	</mensaje></Cliente>
