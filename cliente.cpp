@@ -94,13 +94,13 @@ int connect()
 {
 	if (isConnected)
 	{
-		cout << "El servidor ya está conectado";
+		cout << "El servidor ya está conectado" << endl;
 		return 0;
 	}
 
-	cout << "-----" << std::endl;
-	cout << "Me intento conectar a: " << ipChar << ":" << portNumber << std::endl;
-	cout << "-----" << std::endl;
+	cout << "-----" << endl;
+	cout << "Me intento conectar a: " << ipChar << ":" << portNumber << endl;
+	cout << "-----" << endl;
 
 	 //CREO EL SOCKET.
 	log.writeLine("CREANDO SOCKET... ");
@@ -138,13 +138,13 @@ int disconnect()
 {
 	if (!isConnected)
 	{
-		cout << "El servidor ya está desconectado";
+		cout << "El servidor ya está desconectado" << endl;
 		return 0;
 	}
 
-	cout << "-----" << std::endl;
-	cout << "Desconectando del servidor" << std::endl;
-	cout << "-----" << std::endl;
+	cout << "-----" << endl;
+	cout << "Desconectando del servidor" << endl;
+	cout << "-----" << endl;
 
 	// CIERRO SOCKET
 	close(socketCliente);
@@ -157,9 +157,9 @@ int disconnect()
 // MÉTODO QUE DEBE CERRAR TODAS LAS OPERACIONES INCONCLUSAS Y CERRAR LA APLICACIÓN PROLIJAMENTE.
 int finish()
 {
-	cout << "-----" << std::endl;
-	cout << "Terminamos la ejecución del programa." << std::endl;
-	cout << "-----" << std::endl;
+	cout << "-----" << endl;
+	cout << "Terminamos la ejecución del programa." << endl;
+	cout << "-----" << endl;
 	return -1;
 }
 
@@ -167,6 +167,12 @@ int finish()
 // ENVIAMOS UN MENSAJE SEGÚN LA INFORMACIÓN OBTENIDA PREVIAMENTE DEL XML.
 int sendMessage(int nro)
 {
+	if (!isConnected)
+	{
+		cout << "El servidor está desconectado. Conéctelo para enviar mensajes"
+			 << endl;
+		return 0;
+	}
 
 	char respuestaServer[255];
 
@@ -202,18 +208,20 @@ int sendMessage(int nro)
 
 
 // CICLAMOS PARA EJECUTAR LOS DIFERENTES MENSAJES QUE PUEDEN ESTAR EN EL XML.
-int loop(unsigned int duracion)
+int loop(int duracion)
 {
 	cout << "-----" << std::endl;
 	cout << "Iniciamos la sentencia Ciclar:" << std::endl;
 
 	//inicio el reloj
-	unsigned int time;
+	double time = 0;
+	double endTime = (double) duracion / 1000;
 	clock_t startTime = clock();
 
 	unsigned int i = 0;
-	while (time < duracion)
+	while (time < endTime)
     {
+		cout << time << endl;
     	//ciclo mensajes
 		sendMessage(i);
     	i++;
@@ -221,9 +229,9 @@ int loop(unsigned int duracion)
     		i = 0;
 
     	//calculo el nuevo tiempo
-    	time = ((clock() - startTime) *1000 / CLOCKS_PER_SEC);
+    	time = ((double)((clock() - startTime))) / ((double) CLOCKS_PER_SEC);
     }
-	cout << "-----" << std::endl;
+	cout << "-----" << endl;
 	return 0;
 }
 
@@ -256,7 +264,7 @@ int processInput(unsigned int input)
 void leerXMLMock(){
 
 	portNumber = 5001;
-	ipChar = "127.0.0.1"
+	ipChar = "127.0.0.1";
 
 	struct mensaje item;
 
@@ -299,8 +307,8 @@ int main(int argc, char *argv[])
 
 	cout << "FIN DEL METODO EJEMPLO DE PRUEBA RÁPIDO" << endl << endl;
 
-
-	disconnect();
+	if (isConnected)
+		disconnect();
 
 	return 0;
 }
