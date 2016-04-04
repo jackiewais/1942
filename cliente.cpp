@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -10,13 +11,14 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <arpa/inet.h>
+#include <ctime>
 #include "Logger/Log.h"
 using namespace std;
 
 
 // ==============================================================================
 
-struct  menuItem {
+struct  mensaje {
     string Id;
     string Tipo;
     string Valor;
@@ -24,9 +26,12 @@ struct  menuItem {
 
 unsigned short portNumber;
 const char* ipChar;
+bool isConnected;
 
-list<menuItem> menu;
 Log log;
+
+list<string> listaMenu;
+vector<struct mensaje> listaMensajes;
 
 // Variables locales relacionadas con el socket.
 int socketCliente;
@@ -37,9 +42,9 @@ char *mensaje;
 
 
 // GENERAMOS LA ESTRUCTURA DEL MENU A UTILIZAR.
-list<menuItem> generateMenu()
+list<string> generateMenu(vector<struct mensaje> mensajes)
 {
-	list<menuItem> menu;
+	list<string> menu;
 
 	// LLAMO A LA IMPLEMENTACION QUE TRABAJA CON LOS XML.
 	// RECIBIREMOS UNA LISTA O UN OBJECTO CON ALGUN FORMATO.
@@ -47,36 +52,24 @@ list<menuItem> generateMenu()
 	// EN LOS ELEMENTOS DEL MENU QUE NO SON DINÁMICOS APROVECHO
 	// Y RESGUARDO POR EJEMPLO EL IP:PUERTO
 
-	menuItem item;
+	string item;
 
-	item.Id = "Conectar";
-	item.Tipo = "";
-	item.Valor = "";
+	item = "Conectar";
 	menu.push_back(item);
 
-	item.Id = "Desconectar";
-	item.Tipo = "";
-	item.Valor = "";
+	item = "Desconectar";
 	menu.push_back(item);
 
-	item.Id = "Salir";
-	item.Tipo = "";
-	item.Valor = "";
+	item = "Salir";
 	menu.push_back(item);
 
-	item.Id = "Mensaje1";
-	item.Tipo = "INT";
-	item.Valor = "10";
-	menu.push_back(item);
+	for (int i = 0; i< mensajes.size(); i++)
+	{
+		item = mensajes[i].Id;
+		menu.push_back(item);
+	}
 
-	item.Id = "Mensaje2";
-	item.Tipo = "STRING";
-	item.Valor = "hola mundo";
-	menu.push_back(item);
-
-	item.Id = "Ciclar";
-	item.Tipo = "";
-	item.Valor = "";
+	item = "Ciclar";
 	menu.push_back(item);
 
 	return menu;
@@ -84,19 +77,14 @@ list<menuItem> generateMenu()
 
 
 // IMPRIME LA PANTALLA DEL MENU PREVIAMENTE GENERADO.-
-void printMenu(list<menuItem> items)
+void printMenu()
 {
-    list<menuItem>::iterator pos;
-    pos = items.begin();
-    int identificador = 1;
-
-    while( pos != items.end())
-    {
-    	cout << std::endl;
-    	cout << identificador << ") " << (*pos).Id << std::endl;
-
-    	identificador++;
-    	pos++;
+	int i = 1;
+	for (list<string>::iterator j = listaMenu.begin(); j != listaMenu.end(); j++)
+	{
+		cout << std::endl;
+    	cout << i << ") " << *j << std::endl;
+    	i++;
     }
 }
 
@@ -104,6 +92,12 @@ void printMenu(list<menuItem> items)
 // INVOCACIÓN A LA LÓGICA PARA CONECTARNOS AL SERVIDOR.
 int connect()
 {
+	if (isConnected)
+	{
+		cout << "El servidor ya está conectado";
+		return 0;
+	}
+
 	cout << "-----" << std::endl;
 	cout << "Me intento conectar a: " << ipChar << ":" << portNumber << std::endl;
 	cout << "-----" << std::endl;
@@ -133,6 +127,7 @@ int connect()
 		return -1;
 	} else {
 		log.writeLine("CONECTADOS CORRECTAMENTE CON EL SERVIDOR.");
+		isConnected = true;
 		return 0;
 	}
 }
@@ -141,6 +136,12 @@ int connect()
 // INVOCACIÓN A LA LÓGICA PARA DESCONECTARNOS DEL SERVIDOR.
 int disconnect()
 {
+	if (!isConnected)
+	{
+		cout << "El servidor ya está desconectado";
+		return 0;
+	}
+
 	cout << "-----" << std::endl;
 	cout << "Desconectando del servidor" << std::endl;
 	cout << "-----" << std::endl;
@@ -148,6 +149,7 @@ int disconnect()
 	// CIERRO SOCKET
 	close(socketCliente);
 	log.writeLine("HEMOS CERRADO CORRECTAMENTE EL SOCKET.");
+	isConnected = false;
 	return 0;
 }
 
@@ -163,20 +165,20 @@ int finish()
 
 
 // ENVIAMOS UN MENSAJE SEGÚN LA INFORMACIÓN OBTENIDA PREVIAMENTE DEL XML.
-int sendMessage(menuItem menuSelected)
+int sendMessage(int nro)
 {
 
 	char respuestaServer[255];
 
 	cout << "-----" << std::endl;
-	cout << "Enviamos el mensaje: " << menuSelected.Id << endl;
-	cout << "Tipo:" << menuSelected.Tipo << std::endl;
-	cout << "Valor:" << menuSelected.Valor << std::endl;
-	cout << "-----" << std::endl;
+	cout << "Enviamos el mensaje: " << listaMensajes[nro].Id << endl;
+	cout << "Tipo:" << listaMensajes[nro].Tipo << endl;
+	cout << "Valor:" << listaMensajes[nro].Valor << endl;
+	cout << "-----" << endl;
 
 	// MANDO UN MENSAJE
 	log.writeLine("ENVIANDO DATOS...");
-	mensaje = strdup(menuSelected.Valor.c_str());
+	mensaje = strdup(listaMensajes[nro].Valor.c_str());
 	if( send(socketCliente , mensaje , strlen(mensaje) , 0) < 0)
 	{
 		log.writeLine("ERROR AL ENVIAR DATOS...");
@@ -200,19 +202,26 @@ int sendMessage(menuItem menuSelected)
 
 
 // CICLAMOS PARA EJECUTAR LOS DIFERENTES MENSAJES QUE PUEDEN ESTAR EN EL XML.
-int loop(list<menuItem> items)
+int loop(unsigned int duracion)
 {
 	cout << "-----" << std::endl;
 	cout << "Iniciamos la sentencia Ciclar:" << std::endl;
-    list<menuItem>::iterator pos;
-    pos = items.begin();
-    unsigned int identificador = 1;
 
-    while( pos != items.end())
+	//inicio el reloj
+	unsigned int time;
+	clock_t startTime = clock();
+
+	unsigned int i = 0;
+	while (time < duracion)
     {
-    	if(identificador > 3 && identificador < items.size()) sendMessage(*pos);
-    	identificador++;
-    	pos++;
+    	//ciclo mensajes
+		sendMessage(i);
+    	i++;
+    	if (i == listaMensajes.size())
+    		i = 0;
+
+    	//calculo el nuevo tiempo
+    	time = ((clock() - startTime) *1000 / CLOCKS_PER_SEC);
     }
 	cout << "-----" << std::endl;
 	return 0;
@@ -222,79 +231,74 @@ int loop(list<menuItem> items)
 // SEGÚN LO QUE ELIJA EL USUARIO, PROCESAMOS UNA OPCIÓN U OTRA.
 int processInput(unsigned int input)
 {
-    list<menuItem>::iterator pos;
-    pos = menu.begin();
-    unsigned int identificador = 1;
-    menuItem menuSelected;
-    while( pos != menu.end())
-    {
-    	if(identificador == input) menuSelected = *pos;
-    	identificador++;
-    	pos++;
-    }
-
     int response;
+    unsigned int ms;
 
-	if(input == 1)
+    if(input == 1)
 		response = connect();
 	else if (input == 2)
 		response = disconnect();
 	else if (input == 3)
 		response = finish();
-	else if(input < menu.size())
-		response = sendMessage(menuSelected);
-	else						//input no válido
-		response = loop(menu);
-
+	else if(input == listaMenu.size())
+	{
+		cout << "Introduzca la duración del ciclo en milisegundos" << endl;
+		cin >> ms;
+		response = loop(ms);
+	}
+	else if ((input > listaMenu.size()) || (input < 1))						//input no válido
+		response = -2;
+	else
+		response = sendMessage(input-3);
 	return response;
 }
 
+void leerXMLMock(){
 
-// METODO PARA PROBAR LAS EJECUCIONES DE LOS MÉTODOS DEL MENU Y EL LOG.-
-void metodoPrueba(){
+	portNumber = 5001;
+	ipChar = "127.0.0.1"
 
+	struct mensaje item;
+
+	item.Id = "Mensaje1";
+	item.Tipo = "INT";
+	item.Valor = "10";
+	listaMensajes.push_back(item);
+
+	item.Id = "Mensaje2";
+	item.Tipo = "STRING";
+	item.Valor = "hola mundo";
+	listaMensajes.push_back(item);
+
+}
+
+int main(int argc, char *argv[])
+{
 	unsigned int input;
+	int error;
 
 	cout << "METODO EJEMPLO DE PRUEBA RÁPIDO" << endl << endl;
 
-	Log log;
+	// Inicializar el log.
+
 	log.createFile();
 
-	log.writeLine("normal 1");
-	log.writeLine("normal 2");
-	log.writeLine("normal 3");
+	//error = leerXML()
+	leerXMLMock();
+	listaMenu = generateMenu(listaMensajes);
 
-	list <string> myList;
-
-	myList.push_back("de lista 1");
-	myList.push_back("de lista 2");
-	myList.push_back("de lista 3");
-
-	log.writeBlock(myList);
-
-	menu = generateMenu();
+	isConnected = false;
 	int myResponse = 0;
 	while(myResponse >= 0)
 	{
-		printMenu(menu);
+		printMenu();
 		cout << "Por favor, ingrese una de las siguientes opciones numéricas:" << endl;
 		cin >> input;
 		myResponse = processInput(input);
 	}
 
 	cout << "FIN DEL METODO EJEMPLO DE PRUEBA RÁPIDO" << endl << endl;
-}
-// ==============================================================================
 
-int main(int argc, char *argv[])
-{
-	// Inicializar el log.
-	log.createFile();
-	portNumber = 5001;
-	ipChar = "192.168.0.7";
-
-	// para probar, luego borrar.
-	metodoPrueba();
 
 	disconnect();
 
