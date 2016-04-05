@@ -31,10 +31,7 @@ Log log;
 list<string> listaMenu;
 vector<struct mensaje> listaMensajes;
 
-// Variables locales relacionadas con el socket.
 int socketCliente;
-struct sockaddr_in server;
-char *mensaje;
 
 // ==============================================================================
 
@@ -91,6 +88,8 @@ void printMenu()
 // INVOCACIÓN A LA LÓGICA PARA CONECTARNOS AL SERVIDOR.
 int connect()
 {
+	struct sockaddr_in server;
+
 	if (isConnected)
 	{
 		cout << "El servidor ya está conectado" << endl;
@@ -167,6 +166,8 @@ int finish()
 // ENVIAMOS UN MENSAJE SEGÚN LA INFORMACIÓN OBTENIDA PREVIAMENTE DEL XML.
 int sendMessage(int nro)
 {
+	char *message;
+
 	if (!isConnected)
 	{
 		cout << "El servidor está desconectado. Conéctelo para enviar mensajes"
@@ -184,8 +185,8 @@ int sendMessage(int nro)
 
 	// MANDO UN MENSAJE
 	log.writeLine("ENVIANDO DATOS...");
-	mensaje = strdup(listaMensajes[nro].Valor.c_str());
-	if( send(socketCliente , mensaje , strlen(mensaje) , 0) < 0)
+	message = strdup(listaMensajes[nro].Valor.c_str());
+	if( send(socketCliente , message , strlen(message) , 0) < 0)
 	{
 		log.writeLine("ERROR AL ENVIAR DATOS...");
 		return 1;
