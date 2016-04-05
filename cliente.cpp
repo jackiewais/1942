@@ -1,5 +1,3 @@
-/* A simple server in the internet domain using TCP
-   The port number is passed as an argument */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,10 +77,11 @@ list<string> generateMenu(vector<struct mensaje> mensajes)
 // IMPRIME LA PANTALLA DEL MENU PREVIAMENTE GENERADO.-
 void printMenu()
 {
+	cout << std::endl;
+
 	int i = 1;
 	for (list<string>::iterator j = listaMenu.begin(); j != listaMenu.end(); j++)
 	{
-		cout << std::endl;
     	cout << i << ") " << *j << std::endl;
     	i++;
     }
@@ -108,7 +107,7 @@ int connect()
 
 	if (socketCliente < 0) {
 		log.writeLine("ERROR AL CREAR EL SOCKET. ");
-		return -1;
+		return 1;
 	} else {
 		log.writeLine("PUDIMOS CREAR EL SOCKET. ");
 	}
@@ -124,7 +123,7 @@ int connect()
 	log.writeLine("CONECTANDO... ");
 	if (connect(socketCliente,(struct sockaddr *)&server, sizeof(server)) < 0) {
 		log.writeLine("ERROR AL CONECTAR CON EL SERVIDOR.");
-		return -1;
+		return 1;
 	} else {
 		log.writeLine("CONECTADOS CORRECTAMENTE CON EL SERVIDOR.");
 		isConnected = true;
@@ -146,7 +145,8 @@ int disconnect()
 	cout << "Desconectando del servidor" << endl;
 	cout << "-----" << endl;
 
-	// CIERRO SOCKET
+	// ENVÍO MENSAJE DE EXIT Y CIERRO SOCKET
+	send(socketCliente , "quit" , 4 , 0);
 	close(socketCliente);
 	log.writeLine("HEMOS CERRADO CORRECTAMENTE EL SOCKET.");
 	isConnected = false;
@@ -188,7 +188,7 @@ int sendMessage(int nro)
 	if( send(socketCliente , mensaje , strlen(mensaje) , 0) < 0)
 	{
 		log.writeLine("ERROR AL ENVIAR DATOS...");
-		return -1;
+		return 1;
 	} else {
 		log.writeLine("HEMOS ENVIADO LOS DATOS SATISFACTORIAMENTE...");
 	}
@@ -198,7 +198,7 @@ int sendMessage(int nro)
 	if( recv(socketCliente, respuestaServer , 255 , 0) < 0)
 	{
 		log.writeLine("ERROR AL RECIBIDR LOS DATOS.");
-		return -1;
+		return 1;
 	}
 	log.writeLine("HEMOS RECIBIDO LA SIGUIENTE RESPUESTA DEL SERVIDOR:");
 	log.writeLine(respuestaServer);
@@ -257,7 +257,7 @@ int processInput(unsigned int input)
 	else if ((input > listaMenu.size()) || (input < 1))						//input no válido
 		response = -2;
 	else
-		response = sendMessage(input-3);
+		response = sendMessage(input-4);
 	return response;
 }
 
@@ -285,10 +285,7 @@ int main(int argc, char *argv[])
 	unsigned int input;
 	int error;
 
-	cout << "METODO EJEMPLO DE PRUEBA RÁPIDO" << endl << endl;
-
 	// Inicializar el log.
-
 	log.createFile();
 
 	//error = leerXML()
@@ -304,8 +301,6 @@ int main(int argc, char *argv[])
 		cin >> input;
 		myResponse = processInput(input);
 	}
-
-	cout << "FIN DEL METODO EJEMPLO DE PRUEBA RÁPIDO" << endl << endl;
 
 	if (isConnected)
 		disconnect();

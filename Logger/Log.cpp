@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <fstream>
 #include <stdio.h>
 #include <time.h>
 #include <list>
@@ -13,27 +12,31 @@ using namespace std;
 #include "Log.h"
 #include "../Utils/Util.h"
 
-const char* logFile = "log_file.txt";
-const char* logErrorFile = "log_error_file.txt";
+//const char* logFile = "log_file.txt";
+//const char* logErrorFile = "log_error_file.txt";
+
+const char* logName = "log_file.txt";
+const char* logPath =  "./Logger/Logs/";
+
 Util util;
+
+char const* getLogFile(){
+	return (string(logPath) + string(logName)).c_str();
+}
 
 void Log::writeLine(string line)
 {
-	cout << line << std::endl;
-    std::ofstream log_file(logFile, std::ios_base::out | std::ios_base::app );
-
-    log_file << std::endl;
-    log_file << util.currentDateTime() + " || " << line << std::endl;
+	printf("%s\n",line.c_str());
+    ofstream log_file(getLogFile(), ios_base::out | ios_base::app );
+    log_file << util.currentDateTime() + " || " << line << endl;
 }
 
 void Log::writeErrorLine(string line)
 {
+	perror((line + "\n").c_str());
+    ofstream log_file(getLogFile(), ios_base::out | ios_base::app );
 
-	cout << line;
-    std::ofstream log_file(logErrorFile, std::ios_base::out | std::ios_base::app );
-
-    log_file << std::endl;
-    log_file << util.currentDateTime() + " || " << line << std::endl;
+    log_file << util.currentDateTime() + " || " << line << endl;
 }
 
 
@@ -44,7 +47,7 @@ void Log::deleteLine()
 
 void Log::writeBlock(list<string> lineList)
 {
-    std::ofstream log_file(logFile, std::ios_base::out | std::ios_base::app );
+    std::ofstream log_file(getLogFile(), std::ios_base::out | std::ios_base::app );
     list<string>::iterator pos;
     pos = lineList.begin();
     while( pos != lineList.end())
@@ -56,7 +59,7 @@ void Log::writeBlock(list<string> lineList)
     }
 }
 
-void Log::writeErrorBlock(list<string> lineList)
+/*void Log::writeErrorBlock(list<string> lineList)
 {
     std::ofstream log_file(logErrorFile, std::ios_base::out | std::ios_base::app );
     list<string>::iterator pos;
@@ -68,7 +71,7 @@ void Log::writeErrorBlock(list<string> lineList)
     	log_file << util.currentDateTime() + " || " << *pos << std::endl;
     	pos++;
     }
-}
+}*/
 
 void Log::deleteBlock()
 {
@@ -90,20 +93,24 @@ inline bool file_exists (const std::string& name) {
 void Log::createFile()
 {
 	// Hacemos un backup del anterior archivo de Log.
-	string bName =  "(" + util.currentDateTime() + ")" + logFile;
+	string bName =  string(logPath) + "(" + util.currentDateTime() + ")" + logName;
 	const char* backupName = bName.c_str();
-	if(file_exists(logFile))
-		rename(logFile, backupName);
+	if(file_exists(getLogFile()))
+		rename(getLogFile(), backupName);
 
 	// Creamos e inicializamos nunestro nuevo archivos de log.
-	std::ofstream outfile (logFile);
+	std::ofstream outfile (getLogFile());
 	outfile << "Archivo de Log inicializado: " << util.currentDateTime() << std::endl;
 	outfile << std::endl;
 	outfile.close();
 
+	if(!file_exists(getLogFile())){
+		perror(("Missing folder " + string(logPath)).c_str());
+		exit(1);
+	}
 }
 
-void Log::createErrorFile()
+/*void Log::createErrorFile()
 {
 	// Hacemos un backup del anterior archivo de Log.
 	string bName =  "(" + util.currentDateTime() + ")" + logErrorFile;
@@ -117,7 +124,7 @@ void Log::createErrorFile()
 	outfile << std::endl;
 	outfile.close();
 
-}
+}*/
 
 void Log::deleteFile()
 {

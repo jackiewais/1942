@@ -7,7 +7,7 @@
 using namespace std;
 using namespace Parser;
 
-int main() {
+int thisisnotamain() {
 	char * str = "y";
 	bool entro = false;
 
