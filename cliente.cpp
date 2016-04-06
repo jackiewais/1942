@@ -281,6 +281,19 @@ int processInput(unsigned int input)
 	return response;
 }
 
+inline const char* ToString(Parser::messageType v)
+{
+	// CHAR, INT, DOUBLE, STRING, ERROR
+    switch (v)
+    {
+        case CHAR:   return "CHAR";
+        case INT:   return "INT";
+        case DOUBLE: return "DOUBLE";
+        case STRING: return "STRING";
+        default:      return "ERROR";
+    }
+}
+
 void leerXMLMock(){
 
 
