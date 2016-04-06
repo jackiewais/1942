@@ -283,7 +283,6 @@ int processInput(unsigned int input)
 
 inline const char* ToString(Parser::messageType v)
 {
-	// CHAR, INT, DOUBLE, STRING, ERROR
     switch (v)
     {
         case CHAR:   return "CHAR";
