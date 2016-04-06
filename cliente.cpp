@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <iostream>
+#include <limits>
 #include <arpa/inet.h>
 #include <ctime>
 #include "Logger/Log.h"
@@ -124,6 +125,18 @@ int connect()
 		log.writeLine("ERROR AL CONECTAR CON EL SERVIDOR.");
 		return 1;
 	} else {
+		char respuestaServer[256];
+		bzero(respuestaServer,256);
+		if( recv(socketCliente, respuestaServer , 255 , 0) < 0)
+		{
+			log.writeLine("ERROR AL RECIBIDR LA RESPUESTA.");
+			return 1;
+		}
+		if (strncmp(respuestaServer, "ERROR", 5) == 0){
+			log.writeLine("ERROR AL CONECTAR CON EL SERVIDOR:" + string(respuestaServer));
+			return 1;
+		}
+
 		log.writeLine("CONECTADOS CORRECTAMENTE CON EL SERVIDOR.");
 		isConnected = true;
 		return 0;
@@ -175,8 +188,6 @@ int sendMessage(int nro)
 		return 0;
 	}
 
-	char respuestaServer[255];
-
 	cout << "-----" << std::endl;
 	cout << "Enviamos el mensaje: " << listaMensajes[nro].Id << endl;
 	cout << "Tipo:" << listaMensajes[nro].Tipo << endl;
@@ -195,7 +206,10 @@ int sendMessage(int nro)
 	}
 
 	// RECIBIENDO INFORMACION
+
+	char respuestaServer[256];
 	log.writeLine("RECIBIENDO INFORMACION...");
+	bzero(respuestaServer,256);
 	if( recv(socketCliente, respuestaServer , 255 , 0) < 0)
 	{
 		log.writeLine("ERROR AL RECIBIDR LOS DATOS.");
@@ -243,22 +257,22 @@ int processInput(unsigned int input)
     int response;
     unsigned int ms;
 
-    if(input == 1)
+    if ((input > listaMenu.size()) || (input < 1)){ //input no válido
+    	    	cout << "Error: Introduzca una de las opciones indicadas" << endl;
+    	    	response = 1;
+    }else if(input == 1)
 		response = connect();
 	else if (input == 2)
 		response = disconnect();
 	else if (input == 3)
 		response = finish();
-	else if(input == listaMenu.size())
-	{
+	else if(input == listaMenu.size()){
 		cout << "Introduzca la duración del ciclo en milisegundos" << endl;
 		cin >> ms;
 		response = loop(ms);
-	}
-	else if ((input > listaMenu.size()) || (input < 1))						//input no válido
-		response = -2;
-	else
+	}else
 		response = sendMessage(input-4);
+
 	return response;
 }
 
@@ -283,8 +297,7 @@ void leerXMLMock(){
 
 int main(int argc, char *argv[])
 {
-	unsigned int input;
-	int error;
+	int input;
 
 	// Inicializar el log.
 	log.createFile();
@@ -300,7 +313,13 @@ int main(int argc, char *argv[])
 		printMenu();
 		cout << "Por favor, ingrese una de las siguientes opciones numéricas:" << endl;
 		cin >> input;
-		myResponse = processInput(input);
+		if (!cin){ //Validates if is a number
+			cout << "Error: Debe ingresar un número" << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			myResponse = 1;
+		}else
+			myResponse = processInput(input);
 	}
 
 	if (isConnected)
