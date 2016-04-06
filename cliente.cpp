@@ -11,7 +11,9 @@
 #include <limits>
 #include <arpa/inet.h>
 #include <ctime>
+#include <sstream>
 #include "Logger/Log.h"
+#include "Parser/Parser.h"
 using namespace std;
 
 
@@ -34,6 +36,9 @@ vector<struct mensaje> listaMensajes;
 
 int socketCliente;
 
+Parser::type_datosCliente xml;
+
+enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
 // ==============================================================================
 
 
@@ -278,21 +283,35 @@ int processInput(unsigned int input)
 
 void leerXMLMock(){
 
-	portNumber = 5001;
-	ipChar = "127.0.0.1";
 
 	struct mensaje item;
+	string path;
+	cout << "Por favor, ingrese el nombre del archivo xml a utilizar:" << endl;
+	cin >> path;
+	char* myPath = const_cast<char*>(path.c_str());
+	xml = Parser::parseXMLCliente(myPath);
 
-	item.Id = "Mensaje1";
-	item.Tipo = "INT";
-	item.Valor = "10";
-	listaMensajes.push_back(item);
+	portNumber = xml.puerto;
+	ipChar = xml.ip;
 
-	item.Id = "Mensaje2";
-	item.Tipo = "STRING";
-	item.Valor = "hola mundo";
-	listaMensajes.push_back(item);
+	std::map<int,Parser::type_mensaje>::iterator parserIterator;
+	for (parserIterator = xml.mensajes->begin(); parserIterator != xml.mensajes->end(); ++parserIterator)
+	{
+		const char* sTipo = ToString(parserIterator->second.tipo);
 
+	    std::ostringstream ostr;
+	    ostr << parserIterator->second.id;
+	    std::string sId = ostr.str();
+
+	    std::ostringstream ostr2;
+	    ostr2 << parserIterator->second.valor;
+	    std::string sValor = ostr2.str();
+
+		item.Id = sId;
+		item.Tipo = sTipo;
+		item.Valor = sValor;
+		listaMensajes.push_back(item);
+	}
 }
 
 int main(int argc, char *argv[])

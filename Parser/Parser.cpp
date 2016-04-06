@@ -55,17 +55,17 @@ bool validarIpYPuerto(char * ip, char *puerto){
 	//TODO falta validar IP
 }
 
-bool validarMensaje(char * id, messageType tipo, void * valor){
+bool validarMensaje(char * id, messageType tipo, char * valor){
 	if (!sonDigitos(id))
 		return false;
 	if (tipo == (messageType) ERROR)
 		return false;
-	char * val = (char*) &valor;
-	if ((tipo == (messageType) INT || tipo == (messageType) DOUBLE) && !sonDigitos(val))
+	//char * val = (char*) &valor;
+	if ((tipo == (messageType) INT || tipo == (messageType) DOUBLE) && !sonDigitos(valor))
 		return false;
-	if ((tipo == (messageType) CHAR) && strlen(val) > 1)
+	if ((tipo == (messageType) CHAR) && strlen(valor) > 1)
 		return false;
-	if ((tipo == (messageType) STRING) && strlen(val) <= 1)
+	if ((tipo == (messageType) STRING) && strlen(valor) <= 1)
 		return false;
 	return true;
 }
@@ -107,7 +107,7 @@ type_datosCliente Parser::parseXMLCliente(char * nombreArchivo) {
 	xml_node<> * nodo_raiz;
 
 	ifstream elArchivo (nombreArchivo);
-	if (elArchivo.bad()) {
+	if (!elArchivo.good()) {
 		return parseXMLCliente("defaultClienteXML.xml");
 	}
 
@@ -132,7 +132,7 @@ type_datosCliente Parser::parseXMLCliente(char * nombreArchivo) {
 	} else
 		return parseXMLCliente("defaultClienteXML.xml");
 
-	map<int,type_mensaje> mensajes;
+	map<int,type_mensaje>* mensajes = new map<int,type_mensaje>();
 	int i = 0;
 	messageType tipo;
 	char * id;
@@ -150,12 +150,12 @@ type_datosCliente Parser::parseXMLCliente(char * nombreArchivo) {
 			unMsj.id = atoi(id);
 			unMsj.tipo = tipo;
 			unMsj.valor = valor;
-			mensajes.insert(std::pair<int,type_mensaje>(i,unMsj));
+			(*mensajes).insert(std::pair<int,type_mensaje>(i,unMsj));
 			i++;
 		} else
 			return parseXMLCliente("defaultClienteXML.xml");
 	}
-	unXML.mensajes = &mensajes;
+	unXML.mensajes = mensajes;
 
 	return unXML;
 }
