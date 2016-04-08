@@ -347,7 +347,7 @@ inline const char* ToString(Parser::messageType v)
     }
 }
 
-void leerXMLMock(){
+void leerXML(){
 
 
 	struct mensaje item;
@@ -387,8 +387,7 @@ int main(int argc, char *argv[])
 	// Inicializar el log.
 	log.createFile();
 
-	//error = leerXML()
-	leerXMLMock();
+	leerXML();
 	listaMenu = generateMenu(listaMensajes);
 
 	isConnected = false;
