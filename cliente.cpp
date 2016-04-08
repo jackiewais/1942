@@ -107,14 +107,14 @@ int connect()
 	cout << "-----" << endl;
 
 	 //CREO EL SOCKET.
-	log.writeLine("CREANDO SOCKET... ");
+	log.writeLine("Creando Socket... ");
 	socketCliente =  socket(AF_INET , SOCK_STREAM , 0);
 
 	if (socketCliente < 0) {
-		log.writeLine("ERROR AL CREAR EL SOCKET. ");
+		log.writeLine("ERROR al crear el socket");
 		return 1;
 	} else {
-		log.writeLine("PUDIMOS CREAR EL SOCKET. ");
+		log.writeLine("Socket creado");
 	}
 
 	//INICIALIZO LAS VARIABLES DEL STRUCK SOCKADDR_IN
@@ -125,24 +125,24 @@ int connect()
 	server.sin_addr.s_addr = inet_addr(ipChar);
 
 	//HAGO CONNECT CON EL SERVER
-	log.writeLine("CONECTANDO... ");
+	log.writeLine("Conectando... ");
 	if (connect(socketCliente,(struct sockaddr *)&server, sizeof(server)) < 0) {
-		log.writeLine("ERROR AL CONECTAR CON EL SERVIDOR.");
+		log.writeLine("ERROR al conectar con el servidor");
 		return 1;
 	} else {
 		char respuestaServer[256];
 		bzero(respuestaServer,256);
 		if( recv(socketCliente, respuestaServer , 255 , 0) < 0)
 		{
-			log.writeLine("ERROR AL RECIBIDR LA RESPUESTA.");
+			log.writeLine("ERROR al recibir la respuesta");
 			return 1;
 		}
 		if (strncmp(respuestaServer, "ERROR", 5) == 0){
-			log.writeLine("ERROR AL CONECTAR CON EL SERVIDOR:" + string(respuestaServer));
+			log.writeLine("ERROR al conectar con el servidor:" + string(respuestaServer));
 			return 1;
 		}
 
-		log.writeLine("CONECTADOS CORRECTAMENTE CON EL SERVIDOR.");
+		log.writeLine("Conectado correctamente con el servidor");
 		isConnected = true;
 		return 0;
 	}
@@ -163,9 +163,12 @@ int disconnect()
 	cout << "-----" << endl;
 
 	// ENVÍO MENSAJE DE EXIT Y CIERRO SOCKET
-	send(socketCliente , "quit" , 4 , 0);
+	char message[256];
+	bzero(message,256);
+	strcpy(message,"q");
+	send(socketCliente , message , strlen(message) , 0);
 	close(socketCliente);
-	log.writeLine("HEMOS CERRADO CORRECTAMENTE EL SOCKET.");
+	log.writeLine("Socket correctamente cerrado.");
 	isConnected = false;
 	return 0;
 }
@@ -184,7 +187,8 @@ int finish()
 // ENVIAMOS UN MENSAJE SEGÚN LA INFORMACIÓN OBTENIDA PREVIAMENTE DEL XML.
 int sendMessage(int nro)
 {
-	char *message;
+	char message[256];
+	int n;
 
 	if (!isConnected)
 	{
@@ -200,28 +204,34 @@ int sendMessage(int nro)
 	cout << "-----" << endl;
 
 	// MANDO UN MENSAJE
-	log.writeLine("ENVIANDO DATOS...");
-	message = strdup(listaMensajes[nro].Valor.c_str());
+	log.writeLine("Enviando datos...");
+    bzero(message,256);
+    strcpy(message,listaMensajes[nro].Valor.c_str());
 	if( send(socketCliente , message , strlen(message) , 0) < 0)
 	{
-		log.writeLine("ERROR AL ENVIAR DATOS...");
+		log.writeLine("ERROR al enviar los datos...");
 		return 1;
 	} else {
-		log.writeLine("HEMOS ENVIADO LOS DATOS SATISFACTORIAMENTE...");
+		log.writeLine("Datos enviados satisfactoriamente...");
 	}
 
 	// RECIBIENDO INFORMACION
 
 	char respuestaServer[256];
-	log.writeLine("RECIBIENDO INFORMACION...");
+	log.writeLine("Recibiendo información...");
 	bzero(respuestaServer,256);
-	if( recv(socketCliente, respuestaServer , 255 , 0) < 0)
+	n = recv(socketCliente, respuestaServer , 255 , 0);
+	if( n  < 0)
 	{
-		log.writeLine("ERROR AL RECIBIDR LOS DATOS.");
+		log.writeLine("ERROR al recibir los datos");
 		return 1;
+	}else if (n == 0){
+		//Server disconnected
+		log.writeLine("ERROR: El servidor está desconectado");
+		isConnected = false;
+	}else{
+		log.writeLine("Recibimos la siguiente respuesta del servidor: " + string(respuestaServer));
 	}
-	log.writeLine("HEMOS RECIBIDO LA SIGUIENTE RESPUESTA DEL SERVIDOR:");
-	log.writeLine(respuestaServer);
 
 	return 0;
 }
@@ -339,9 +349,10 @@ int main(int argc, char *argv[])
 
 	isConnected = false;
 	int myResponse = 0;
+	printMenu();
 	while(myResponse >= 0)
 	{
-		printMenu();
+		//printMenu();
 		cout << "Por favor, ingrese una de las siguientes opciones numéricas:" << endl;
 		cin >> input;
 		if (!cin){ //Validates if is a number
