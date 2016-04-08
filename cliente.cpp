@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <string.h>
+#include <string>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -131,7 +132,7 @@ int connect()
 		return 1;
 	} else {
 		char respuestaServer[256];
-		bzero(respuestaServer,256);
+		memset(respuestaServer,0,256);
 		if( recv(socketCliente, respuestaServer , 255 , 0) < 0)
 		{
 			log.writeLine("ERROR al recibir la respuesta");
@@ -164,8 +165,8 @@ int disconnect()
 
 	// ENVÍO MENSAJE DE EXIT Y CIERRO SOCKET
 	char message[256];
-	bzero(message,256);
-	strcpy(message,"q");
+	memset(message,0,256);
+	message[0]= 'q';
 	send(socketCliente , message , strlen(message) , 0);
 	close(socketCliente);
 	log.writeLine("Socket correctamente cerrado.");
@@ -187,15 +188,27 @@ int finish()
 // ENVIAMOS UN MENSAJE SEGÚN LA INFORMACIÓN OBTENIDA PREVIAMENTE DEL XML.
 int sendMessage(int nro)
 {
-	char message[256];
-	int n;
-
 	if (!isConnected)
-	{
-		cout << "El servidor está desconectado. Conéctelo para enviar mensajes"
-			 << endl;
-		return 0;
-	}
+		{
+			cout << "El servidor está desconectado. Conéctelo para enviar mensajes"
+				 << endl;
+			return 0;
+		}
+
+	int lengthLength = 3;
+	int idLength = 10;
+	int typeLength = 1;
+	int messageSize = lengthLength + idLength + typeLength +
+			listaMensajes[nro].Valor.size();
+
+	char message[messageSize + 1];
+	char *temp;
+	char *msgLength = message;
+	char *msgId = message + lengthLength;
+	char *msgType = msgId + idLength;
+	char *msgData = msgType + typeLength;
+
+	int n;
 
 	cout << "-----" << std::endl;
 	cout << "Enviamos el mensaje: " << listaMensajes[nro].Id << endl;
@@ -205,9 +218,40 @@ int sendMessage(int nro)
 
 	// MANDO UN MENSAJE
 	log.writeLine("Enviando datos...");
-    bzero(message,256);
-    strcpy(message,listaMensajes[nro].Valor.c_str());
-	if( send(socketCliente , message , strlen(message) , 0) < 0)
+    memset(message,' ',messageSize);
+
+    temp = new char[lengthLength + 1];
+
+    if (messageSize < 100){
+    	temp[0] = '0';
+    	strcpy(temp + 1, to_string(messageSize).c_str());
+    	//temp[1] = to_string(messageSize).c_str();
+    }
+    else
+    	strcpy(temp, to_string(messageSize).c_str());
+    	//temp[0] = to_string(messageSize).c_str();
+
+    strcpy(msgLength, temp);
+
+    delete[] temp;
+    temp = new char();
+
+    strcpy(msgId,listaMensajes[nro].Id.c_str());
+
+    if (listaMensajes[nro].Tipo.compare("STRING") == 0)
+    	*msgType = 's';
+    else if (listaMensajes[nro].Tipo.compare("INT") == 0)
+    	*msgType = 'i';
+    else if (listaMensajes[nro].Tipo.compare("DOUBLE") == 0)
+    	*msgType = 'd';
+    else if (listaMensajes[nro].Tipo.compare("CHAR") == 0)
+    	*msgType = 'c';
+    else
+    	return -1;
+
+    strcpy(msgData,listaMensajes[nro].Valor.c_str());
+
+	if( send(socketCliente , message , messageSize , 0) < 0)
 	{
 		log.writeLine("ERROR al enviar los datos...");
 		return 1;
