@@ -234,9 +234,9 @@ int sendMessage(int nro)
     strcpy(msgLength, temp);
 
     delete[] temp;
-    temp = new char();
 
     strcpy(msgId,listaMensajes[nro].Id.c_str());
+    memset(msgId + listaMensajes[nro].Id.size(), ' ', idLength - listaMensajes[nro].Id.size());
 
     if (listaMensajes[nro].Tipo.compare("STRING") == 0)
     	*msgType = 's';
