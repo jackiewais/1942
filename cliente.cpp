@@ -41,18 +41,14 @@ Parser::type_datosCliente xml;
 enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
 // ==============================================================================
 
+inline bool fileExists(const char* name) {
+	return ( access( name, F_OK ) != -1 );
+}
 
 // GENERAMOS LA ESTRUCTURA DEL MENU A UTILIZAR.
 list<string> generateMenu(vector<struct mensaje> mensajes)
 {
 	list<string> menu;
-
-	// LLAMO A LA IMPLEMENTACION QUE TRABAJA CON LOS XML.
-	// RECIBIREMOS UNA LISTA O UN OBJECTO CON ALGUN FORMATO.
-	// Y LUEGO ARMO UNA LISTA CON EL STRUCT GENERADO ARRIBA.
-	// EN LOS ELEMENTOS DEL MENU QUE NO SON DINÁMICOS APROVECHO
-	// Y RESGUARDO POR EJEMPLO EL IP:PUERTO
-
 	string item;
 
 	item = "Conectar";
@@ -119,9 +115,7 @@ int connect()
 
 	//INICIALIZO LAS VARIABLES DEL STRUCK SOCKADDR_IN
 	server.sin_family = AF_INET;
-	//EN VALOR RESGUARDE EL PUERTO.
 	server.sin_port = htons(portNumber);
-	//EN TIPO RESGUARDE LA IP DEL SERVIDOR.
 	server.sin_addr.s_addr = inet_addr(ipChar);
 
 	//HAGO CONNECT CON EL SERVER
@@ -360,11 +354,16 @@ void leerXML(){
 
 
 	struct mensaje item;
-	string path;
+	char path[256];
 	cout << "Por favor, ingrese el nombre del archivo xml a utilizar:" << endl;
 	cin >> path;
-	char* myPath = const_cast<char*>(path.c_str());
-	xml = Parser::parseXMLCliente(myPath);
+
+	while (!fileExists(path)){
+		cout << "Ruta ingresada no válida. Por favor chequee que el XML existe:" << endl;
+		cin >> path;
+	}
+
+	xml = Parser::parseXMLCliente(path);
 
 	portNumber = xml.puerto;
 	ipChar = xml.ip;
