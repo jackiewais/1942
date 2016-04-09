@@ -7,11 +7,11 @@
 using namespace std;
 using namespace Parser;
 
-int thisisnotamain() {
+/*int thisisnotamain() {
 	char * str = "y";
 	bool entro = false;
 
 
 	type_datosServer prueba = parseXMLServer("defaultServerXML.xml");
 	type_datosCliente pruebaDos = parseXMLCliente("defaultClienteXML.xml");
-}
+}*/

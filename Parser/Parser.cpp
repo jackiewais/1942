@@ -70,7 +70,7 @@ bool validarMensaje(char * id, messageType tipo, char * valor){
 	return true;
 }
 
-type_datosServer Parser::parseXMLServer(char* const  nombreArchivo) {
+type_datosServer Parser::parseXMLServer(const char* nombreArchivo) {
 	xml_document<> archivo;
 	xml_node<> * nodo_raiz;
 
@@ -102,7 +102,7 @@ type_datosServer Parser::parseXMLServer(char* const  nombreArchivo) {
 
 
 
-type_datosCliente Parser::parseXMLCliente(char * nombreArchivo) {
+type_datosCliente Parser::parseXMLCliente(const char* nombreArchivo) {
 	xml_document<> archivo;
 	xml_node<> * nodo_raiz;
 

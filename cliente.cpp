@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <vector>
 #include <string.h>
-#include <string>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -65,7 +64,7 @@ list<string> generateMenu(vector<struct mensaje> mensajes)
 	item = "Salir";
 	menu.push_back(item);
 
-	for (int i = 0; i< mensajes.size(); i++)
+	for (unsigned int i = 0; i< mensajes.size(); i++)
 	{
 		item = mensajes[i].Id;
 		menu.push_back(item);
@@ -282,29 +281,42 @@ int sendMessage(int nro)
 
 
 // CICLAMOS PARA EJECUTAR LOS DIFERENTES MENSAJES QUE PUEDEN ESTAR EN EL XML.
-int loop(int duracion)
+int loop()
 {
+	unsigned int duracion, i = 0;
+	time_t endwait;
+	time_t start = time(NULL);
+	time_t seconds;
+
+
+	if (!isConnected){
+		cout << "El servidor está desconectado. Conéctelo para enviar mensajes" << endl;
+		return 0;
+	}
+
+	cout << "Introduzca la duración del ciclo en milisegundos" << endl;
+	cin >> duracion;
+
 	cout << "-----" << std::endl;
 	cout << "Iniciamos la sentencia Ciclar:" << std::endl;
 
-	//inicio el reloj
-	double time = 0;
-	double endTime = (double) duracion / 1000;
-	clock_t startTime = clock();
+	seconds = duracion/1000;
+	endwait = start + seconds;
 
-	unsigned int i = 0;
-	while (time < endTime)
-    {
-		cout << time << endl;
-    	//ciclo mensajes
+	log.writeLine("Loop start time: " + string(ctime(&start)));
+
+	while (start < endwait){
+		 //ciclo mensajes
 		sendMessage(i);
-    	i++;
-    	if (i == listaMensajes.size())
-    		i = 0;
+		i++;
+		if (i == listaMensajes.size())
+			i = 0;
 
-    	//calculo el nuevo tiempo
-    	time = ((double)((clock() - startTime))) / ((double) CLOCKS_PER_SEC);
-    }
+		start = time(NULL);
+	 }
+
+	log.writeLine("Loop end time: " + string(ctime(&start)));
+
 	cout << "-----" << endl;
 	return 0;
 }
@@ -314,11 +326,10 @@ int loop(int duracion)
 int processInput(unsigned int input)
 {
     int response;
-    unsigned int ms;
 
     if ((input > listaMenu.size()) || (input < 1)){ //input no válido
-    	    	cout << "Error: Introduzca una de las opciones indicadas" << endl;
-    	    	response = 1;
+    	cout << "Error: Introduzca una de las opciones indicadas" << endl;
+    	response = 1;
     }else if(input == 1)
 		response = connect();
 	else if (input == 2)
@@ -326,9 +337,7 @@ int processInput(unsigned int input)
 	else if (input == 3)
 		response = finish();
 	else if(input == listaMenu.size()){
-		cout << "Introduzca la duración del ciclo en milisegundos" << endl;
-		cin >> ms;
-		response = loop(ms);
+		response = loop();
 	}else
 		response = sendMessage(input-4);
 
