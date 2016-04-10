@@ -42,6 +42,10 @@ bool sonDigitos(char* str){
 	return true;
 }
 
+bool validarLogLevel(char* level){
+	return sonDigitos(level);
+}
+
 bool validarCamposServer(char* cantMax, char* puerto){
 	if (sonDigitos(cantMax) && sonDigitos(puerto))
 		return true;
@@ -89,11 +93,14 @@ type_datosServer Parser::parseXMLServer(const char* nombreArchivo) {
 	char* cantMax = nodo_cantMaxCli->value();
 	xml_node<> * nodo_puerto = nodo_raiz->first_node("puerto");
 	char* puerto = nodo_puerto->value();
+	xml_node<> * nodo_log = nodo_raiz->first_node("log");
+	char* level = nodo_log->value();
 
-	if (validarCamposServer(cantMax, puerto)) {
+	if (validarCamposServer(cantMax, puerto) && validarLogLevel(level)) {
 		type_datosServer unXML;
 		unXML.cantMaxClientes = atoi(cantMax);
 		unXML.puerto = atoi(puerto);
+		unXML.logLevel = atoi(level);
 		return unXML;
 	} else
 		return parseXMLServer("defaultServerXML.xml");
@@ -121,14 +128,19 @@ type_datosCliente Parser::parseXMLCliente(const char* nombreArchivo) {
 	type_datosCliente unXML;
 
 	xml_node<> * nodo_conexion = nodo_raiz->first_node("conexion");
-	xml_node<> * nodo_ip = nodo_conexion->first_node("IP");
-	char* ip = nodo_ip->value();
-	xml_node<> * nodo_puerto = nodo_conexion->first_node("puerto");
-	char* puerto = nodo_puerto->value();
+	xml_node<> * nodo_log = nodo_raiz->first_node("log");
 
-	if (validarIpYPuerto(ip, puerto)) {
+	xml_node<> * nodo_ip = nodo_conexion->first_node("IP");
+	xml_node<> * nodo_puerto = nodo_conexion->first_node("puerto");
+
+	char* ip = nodo_ip->value();
+	char* puerto = nodo_puerto->value();
+	char* level = nodo_log->value();
+
+	if (validarIpYPuerto(ip, puerto) && validarLogLevel(level)) {
 		unXML.ip = ip;
 		unXML.puerto = atoi(puerto);
+		unXML.logLevel = atoi(level);
 	} else
 		return parseXMLCliente("defaultClienteXML.xml");
 

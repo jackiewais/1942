@@ -6,37 +6,52 @@
 #include <list>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 using namespace std;
 
 #include "Log.h"
 #include "../Utils/Util.h"
 
-//const char* logFile = "log_file.txt";
-//const char* logErrorFile = "log_error_file.txt";
-
-const char* logName = "log_file.txt";
-const char* logPath =  "./Logger/Logs/";
+string logName = "Log.txt";
+string logPath =  "./Logs/";
 
 Util util;
+unsigned short level;
 
 char const* getLogFile(){
-	return (string(logPath) + string(logName)).c_str();
+	char const* fullPath = (logPath + logName).c_str();
+	return fullPath;
 }
 
 void Log::writeLine(string line)
 {
 	printf("%s\n",line.c_str());
-    ofstream log_file(getLogFile(), ios_base::out | ios_base::app );
-    log_file << util.currentDateTime() + " || " << line << endl;
+	if(level >= 1){
+		ofstream log_file(getLogFile(), ios_base::out | ios_base::app );
+		log_file << util.currentDateTime() + " || " << line << endl;
+	    log_file.close();
+	}
+}
+
+void Log::writeWarningLine(string line)
+{
+	if(level >= 2){
+		printf("%s\n",line.c_str());
+		ofstream log_file(getLogFile(), ios_base::out | ios_base::app );
+		log_file << util.currentDateTime() + " || WARNING || " << line << endl;
+	    log_file.close();
+	}
 }
 
 void Log::writeErrorLine(string line)
 {
-	perror((line + "\n").c_str());
-    ofstream log_file(getLogFile(), ios_base::out | ios_base::app );
-
-    log_file << util.currentDateTime() + " || " << line << endl;
+	if(level == 3){
+		perror((line + "\n").c_str());
+		ofstream log_file(getLogFile(), ios_base::out | ios_base::app );
+		log_file << util.currentDateTime() + " || ERROR || " << line << endl;
+	    log_file.close();
+	}
 }
 
 
@@ -57,21 +72,8 @@ void Log::writeBlock(list<string> lineList)
     	log_file << util.currentDateTime() + " || " << *pos << std::endl;
     	pos++;
     }
+    log_file.close();
 }
-
-/*void Log::writeErrorBlock(list<string> lineList)
-{
-    std::ofstream log_file(logErrorFile, std::ios_base::out | std::ios_base::app );
-    list<string>::iterator pos;
-    pos = lineList.begin();
-    while( pos != lineList.end())
-    {
-    	cout << *pos;
-    	log_file << std::endl;
-    	log_file << util.currentDateTime() + " || " << *pos << std::endl;
-    	pos++;
-    }
-}*/
 
 void Log::deleteBlock()
 {
@@ -90,13 +92,14 @@ inline bool file_exists (const std::string& name) {
     }
 }
 
-void Log::createFile()
+void Log::createFile(unsigned short  newLevel)
 {
-	// Hacemos un backup del anterior archivo de Log.
-	string bName =  string(logPath) + "(" + util.currentDateTime() + ")" + logName;
-	const char* backupName = bName.c_str();
-	if(file_exists(getLogFile()))
-		rename(getLogFile(), backupName);
+	// Actualizamos el nivel de logueo.
+	level = newLevel;
+
+	// Definimos un nombre para el Log de manera que sea UNIVOCO.-
+	string fileDate = "(" + util.currentDateTime() + ") " + logName;
+	logName = fileDate.c_str();
 
 	// Creamos e inicializamos nunestro nuevo archivos de log.
 	std::ofstream outfile (getLogFile());
@@ -104,27 +107,12 @@ void Log::createFile()
 	outfile << std::endl;
 	outfile.close();
 
+	//Chequeamos que haya sido creado exitosamente.
 	if(!file_exists(getLogFile())){
-		perror(("Missing folder " + string(logPath)).c_str());
+		perror(("Missing folder " + logPath).c_str());
 		exit(1);
 	}
 }
-
-/*void Log::createErrorFile()
-{
-	// Hacemos un backup del anterior archivo de Log.
-	string bName =  "(" + util.currentDateTime() + ")" + logErrorFile;
-	const char* backupName = bName.c_str();
-	if(file_exists(logErrorFile))
-		rename(logFile, backupName);
-
-	// Creamos e inicializamos nunestro nuevo archivos de log.
-	std::ofstream outfile (logErrorFile);
-	outfile << "Archivo de Log para Errores inicializado: " << util.currentDateTime() << std::endl;
-	outfile << std::endl;
-	outfile.close();
-
-}*/
 
 void Log::deleteFile()
 {

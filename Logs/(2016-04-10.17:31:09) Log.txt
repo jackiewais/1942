@@ -1,0 +1,14 @@
+Archivo de Log inicializado: 2016-04-10.17:31:09
+
+2016-04-10.17:31:09 || generamos el menu dinamico.
+2016-04-10.17:31:09 || WARNING || generateMenu::arrancamos la generación del menu.
+2016-04-10.17:31:09 || WARNING || generateMenu::hemos generado el menu correctamente.
+2016-04-10.17:31:09 || generamos el menu dinamico.
+2016-04-10.17:31:09 || WARNING || printMenu::arrancamos la impresión del menu.
+2016-04-10.17:31:09 || WARNING || printMenu::hemos generado el menu correctamente.
+2016-04-10.17:31:11 || WARNING || processInput::iniciamos el procesamiento sobre lo ingresado por el usuario
+2016-04-10.17:31:11 || WARNING || finish::iniciamos la ejecución para finalizar.
+2016-04-10.17:31:11 || antes de terminar nos desconectamos del servidor.
+2016-04-10.17:31:11 || WARNING || finish::terminamos la ejecución para finalizar.
+2016-04-10.17:31:11 || WARNING || processInput::terminamos el procesamiento sobre lo ingresado por el usuario
+2016-04-10.17:31:11 || antes de terminar nos desconectamos del servidor.

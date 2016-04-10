@@ -15,6 +15,7 @@ namespace Parser {
 	struct type_datosServer {
 		int cantMaxClientes;
 		int puerto;
+		unsigned short logLevel;
 	};
 
 	struct type_mensaje {
@@ -26,6 +27,7 @@ namespace Parser {
 	struct type_datosCliente {
 		char * ip;
 		int puerto;
+		unsigned short logLevel;
 		std::map<int,type_mensaje> * mensajes;
 	};
 
