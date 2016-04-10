@@ -282,12 +282,6 @@ int loop()
 	time_t start = time(NULL);
 	time_t seconds;
 
-
-	if (!isConnected){
-		cout << "El servidor está desconectado. Conéctelo para enviar mensajes" << endl;
-		return 0;
-	}
-
 	cout << "Introduzca la duración del ciclo en milisegundos" << endl;
 	cin >> duracion;
 
@@ -299,7 +293,7 @@ int loop()
 
 	log.writeLine("Loop start time: " + string(ctime(&start)));
 
-	while (start < endwait){
+	while ((start < endwait) && (isConnected)){
 		 //ciclo mensajes
 		sendMessage(i);
 		i++;
@@ -308,6 +302,10 @@ int loop()
 
 		start = time(NULL);
 	 }
+	if (!isConnected){
+		cout << "El servidor está desconectado. Conéctelo para enviar mensajes" << endl;
+		return 0;
+	}
 
 	log.writeLine("Loop end time: " + string(ctime(&start)));
 
