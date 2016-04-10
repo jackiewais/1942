@@ -27,7 +27,7 @@ char const* getLogFile(){
 void Log::writeLine(string line)
 {
 	printf("%s\n",line.c_str());
-	if(level >= 1){
+	if(level >= 3){
 		ofstream log_file(getLogFile(), ios_base::out | ios_base::app );
 		log_file << util.currentDateTime() + " || " << line << endl;
 	    log_file.close();
@@ -46,7 +46,7 @@ void Log::writeWarningLine(string line)
 
 void Log::writeErrorLine(string line)
 {
-	if(level == 3){
+	if(level >= 1){
 		perror((line + "\n").c_str());
 		ofstream log_file(getLogFile(), ios_base::out | ios_base::app );
 		log_file << util.currentDateTime() + " || ERROR || " << line << endl;

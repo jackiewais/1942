@@ -37,8 +37,6 @@ vector<struct mensaje> listaMensajes;
 
 int socketCliente;
 
-Parser::type_datosCliente xml;
-
 enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
 // ==============================================================================
 
@@ -330,7 +328,7 @@ int loop()
 	log.writeLine("Loop end time: " + string(ctime(&start)));
 
 	cout << "-----" << endl;
-	log.writeWarningLine("loop::terminamos el ciclar.");
+	log.writeWarningLine("loop:terminamos el ciclar.");
 	return 0;
 }
 
@@ -373,18 +371,24 @@ inline const char* ToString(Parser::messageType v)
 
 void leerXML(){
 
+	Parser::type_datosCliente xml;
 
 	struct mensaje item;
-	char path[256];
-	cout << "Por favor, ingrese el nombre del archivo xml a utilizar:" << endl;
-	cin >> path;
+	string path;
 
-	while (!fileExists(path)){
-		cout << "Ruta ingresada no válida. Por favor chequee que el XML existe:" << endl;
+	cout << "Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
+	cin >> path;
+	if (path == "default")
+		path = Parser::getDefaultNameClient();
+
+	while (!fileExists(path.c_str())){
+		cout << "Ruta ingresada no válida. Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
 		cin >> path;
+		if (path == "default")
+			path = Parser::getDefaultNameClient();
 	}
 
-	xml = Parser::parseXMLCliente(path);
+	xml = Parser::parseXMLCliente(path.c_str());
 
 	logLevel = xml.logLevel;
 	portNumber = xml.puerto;
@@ -419,7 +423,7 @@ int main(int argc, char *argv[])
 	leerXML();
 
 	// Inicializar el log.
-	log.createFile();
+	log.createFile(1);
 
 	log.writeLine("generamos el menu dinamico.");
 	listaMenu = generateMenu(listaMensajes);

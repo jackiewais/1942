@@ -31,6 +31,11 @@ namespace Parser {
 		std::map<int,type_mensaje> * mensajes;
 	};
 
+	bool fileExists(const char* name);
+
+	const char* getDefaultNameServer();
+	const char* getDefaultNameClient();
+
 	type_datosServer parseXMLServer(const char * nombreArchivo);
 	type_datosCliente parseXMLCliente(const char * nombreArchivo);
 

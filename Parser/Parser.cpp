@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <iostream>
 #include <cstdlib>
+#include <unistd.h>
 #include <fstream>
 #include <vector>
 #include <map>
@@ -74,13 +75,21 @@ bool validarMensaje(char * id, messageType tipo, char * valor){
 	return true;
 }
 
+bool Parser::fileExists(const char* name) {
+	return ( access( name, F_OK ) != -1 );
+}
+
+const char* Parser::getDefaultNameServer(){
+	return "Parser/defaultServerXML.xml";
+}
+
 type_datosServer Parser::parseXMLServer(const char* nombreArchivo) {
 	xml_document<> archivo;
 	xml_node<> * nodo_raiz;
 
 	ifstream elArchivo (nombreArchivo);
 	if (elArchivo.bad()) {
-		return parseXMLServer("defaultServerXML.xml");
+		return parseXMLServer(getDefaultNameServer());
 	}
 
 	vector<char> buffer((istreambuf_iterator<char>(elArchivo)), istreambuf_iterator<char>());
@@ -103,11 +112,13 @@ type_datosServer Parser::parseXMLServer(const char* nombreArchivo) {
 		unXML.logLevel = atoi(level);
 		return unXML;
 	} else
-		return parseXMLServer("defaultServerXML.xml");
+		return parseXMLServer(getDefaultNameServer());
 
 }
 
-
+const char* Parser::getDefaultNameClient(){
+	return "Parser/defaultClienteXML.xml";
+}
 
 type_datosCliente Parser::parseXMLCliente(const char* nombreArchivo) {
 	xml_document<> archivo;
@@ -115,7 +126,7 @@ type_datosCliente Parser::parseXMLCliente(const char* nombreArchivo) {
 
 	ifstream elArchivo (nombreArchivo);
 	if (!elArchivo.good()) {
-		return parseXMLCliente("defaultClienteXML.xml");
+		return parseXMLCliente(getDefaultNameClient());
 	}
 
 	vector<char> buffer((istreambuf_iterator<char>(elArchivo)), istreambuf_iterator<char>());
@@ -142,7 +153,7 @@ type_datosCliente Parser::parseXMLCliente(const char* nombreArchivo) {
 		unXML.puerto = atoi(puerto);
 		unXML.logLevel = atoi(level);
 	} else
-		return parseXMLCliente("defaultClienteXML.xml");
+		return parseXMLCliente(getDefaultNameClient());
 
 	map<int,type_mensaje>* mensajes = new map<int,type_mensaje>();
 	int i = 0;
