@@ -5,7 +5,7 @@
 		<puerto>15636</puerto></conexion>
 	<mensaje>
 		<id>Mensaje1</id>
-		<tipo>INT</tipo>
+		<tipo>INT
 		<valor>1</valor></mensaje>
 	<mensaje>
 		<id>Mensaje2</id>

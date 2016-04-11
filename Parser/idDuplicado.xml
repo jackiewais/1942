@@ -8,7 +8,7 @@
 		<tipo>INT</tipo>
 		<valor>1</valor></mensaje>
 	<mensaje>
-		<id>Mensaje2</id>
+		<id>Mensaje1</id>
 		<tipo>STRING</tipo>
 		<valor>hola mundo</valor>
 	</mensaje></Cliente>

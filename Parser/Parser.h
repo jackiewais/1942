@@ -19,7 +19,7 @@ namespace Parser {
 	};
 
 	struct type_mensaje {
-		int id;
+		char id[10];
 		messageType tipo;
 		char* valor;
 	};

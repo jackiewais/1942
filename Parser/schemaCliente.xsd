@@ -1,0 +1,26 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Cliente">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="conexion">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:byte" name="log"/>
+              <xs:element type="xs:string" name="IP"/>
+              <xs:element type="xs:short" name="puerto"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="mensaje" maxOccurs="unbounded" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:string" name="id"/>
+              <xs:element type="xs:string" name="tipo"/>
+              <xs:element type="xs:string" name="valor"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -10,5 +10,15 @@
 	<mensaje>
 		<id>Mensaje2</id>
 		<tipo>STRING</tipo>
-		<valor>hola mundo</valor>
+		<valor>hola</valor>
+	</mensaje>
+	<mensaje>
+		<id>Mensaje3</id>
+		<tipo>CHAR</tipo>
+		<valor>o</valor>
+	</mensaje>
+	<mensaje>
+		<id>Mensaje4</id>
+		<tipo>INT</tipo>
+		<valor>10</valor>
 	</mensaje></Cliente>
