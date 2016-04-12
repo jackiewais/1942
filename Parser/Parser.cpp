@@ -87,7 +87,7 @@ bool Parser::fileExists(const char* name) {
 }
 
 const char* Parser::getDefaultNameServer(){
-	return "Parser/defaultServerXML.xml";
+	return "defaultServerXML.xml";
 }
 
 bool validarUnicidadID(map<int,type_mensaje> * mensajes) {
@@ -176,7 +176,7 @@ type_datosServer Parser::parseXMLServer(const char * nombreArchivo) {
 }
 
 const char* Parser::getDefaultNameClient(){
-	return "Parser/defaultClienteXML.xml";
+	return "defaultClienteXML.xml";
 }
 
 type_datosCliente Parser::parseXMLCliente(const char * nombreArchivo) {

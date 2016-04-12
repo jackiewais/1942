@@ -1,6 +1,6 @@
 <Cliente>
+	<log>1</log>
 	<conexion>
-		<log>1</log>
 		<IP>192.168.0.1</IP>
 		<puerto>15636</puerto></conexion>
 	<mensaje>
