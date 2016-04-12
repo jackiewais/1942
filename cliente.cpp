@@ -388,7 +388,7 @@ void leerXML(){
 			path = Parser::getDefaultNameClient();
 	}
 
-	xml = Parser::parseXMLCliente(path.c_str());
+	xml = Parser::parseXMLCliente(path.c_str(), &log);
 
 	logLevel = xml.logLevel;
 	portNumber = xml.puerto;
@@ -420,10 +420,10 @@ int main(int argc, char *argv[])
 	int myResponse = 0;
 	isConnected = false;
 
-	leerXML();
-
 	// Inicializar el log.
 	log.createFile(1);
+
+	leerXML();
 
 	log.writeLine("generamos el menu dinamico.");
 	listaMenu = generateMenu(listaMensajes);
