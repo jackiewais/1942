@@ -1,0 +1,8 @@
+Archivo de Log inicializado: 2016-04-04.18:00:47
+
+
+2016-04-04.18:00:47 || Cantidad de parámetros inválido
+
+2016-04-04.18:00:47 || CREANDO SOCKET... 
+
+2016-04-04.18:00:47 || PUDIMOS CREAR EL SOCKET. 

@@ -1,0 +1,6 @@
+Archivo de Log inicializado: 2016-04-04.18:08:33
+
+
+2016-04-04.18:08:37 || CREANDO SOCKET... 
+
+2016-04-04.18:08:37 || PUDIMOS CREAR EL SOCKET. 

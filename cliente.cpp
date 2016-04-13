@@ -126,6 +126,16 @@ int connect()
 		log.writeErrorLine("ERROR al conectar con el servidor");
 		return 1;
 	} else {
+ 		struct timeval timeout;
+		 timeout.tv_sec = 60;
+		 timeout.tv_usec = 0;
+
+		 if (setsockopt (socketCliente, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,sizeof(timeout)) < 0)
+			 log.writeErrorLine("ERROR setting socket rcv timeout");
+
+		 if (setsockopt (socketCliente, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
+		 	log.writeErrorLine("ERROR setting socket snd timeout");
+
 		char respuestaServer[256];
 		memset(respuestaServer,0,256);
 		if( recv(socketCliente, respuestaServer , 255 , 0) < 0)
@@ -430,11 +440,11 @@ int main(int argc, char *argv[])
 	listaMenu = generateMenu(listaMensajes);
 
 	log.writeLine("imprimimos el menu dinamico.");
-	printMenu();
+	
 
 	while(myResponse >= 0)
 	{
-		//printMenu();
+		printMenu();
 		cout << "Por favor, ingrese una de las siguientes opciones numéricas:" << endl;
 		cin >> input;
 		if (!cin){ //Validates if is a number
