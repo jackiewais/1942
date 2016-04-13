@@ -123,7 +123,7 @@ int connect()
 	//HAGO CONNECT CON EL SERVER
 	log.writeLine("Conectando... ");
 	if (connect(socketCliente,(struct sockaddr *)&server, sizeof(server)) < 0) {
-		log.writeErrorLine("ERROR al conectar con el servidor");
+		log.writeErrorLine("ERROR al conectar con el servidor ");
 		return 1;
 	} else {
  		struct timeval timeout;
