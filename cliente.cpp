@@ -92,9 +92,8 @@ int connect()
 	//log.writeWarningLine("connect::comenzamos el intento de conectar.");
 	struct sockaddr_in server;
 
-	if (isConnected)
-	{
-		log.writeLine("El servidor ya está conectado");
+	if (isConnected){
+		log.writeLine("El cliente ya fue conectado");
 		//log.writeWarningLine("connect::comenzamos el intento de conectar.");
 		return 0;
 	}
@@ -301,6 +300,11 @@ int sendMessage(int nro)
 // CICLAMOS PARA EJECUTAR LOS DIFERENTES MENSAJES QUE PUEDEN ESTAR EN EL XML.
 int loop()
 {
+	if (listaMensajes.size() == 0){
+		log.writeWarningLine("WARNING: No hay ningún mensaje definido");
+		return 0;
+	}
+
 	//log.writeWarningLine("loop::iniciamos el ciclar.");
 	unsigned int duracion, i = 0;
 	time_t endwait;
@@ -436,11 +440,7 @@ int main(int argc, char *argv[])
 
 	leerXML();
 
-	log.writeLine("generamos el menu dinamico.");
 	listaMenu = generateMenu(listaMensajes);
-
-	log.writeLine("imprimimos el menu dinamico.");
-	
 
 	while(myResponse >= 0)
 	{

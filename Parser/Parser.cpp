@@ -72,11 +72,14 @@ bool validarIpYPuerto(char * ip, char *puerto){
 	return true;
 }
 
-bool validarMensaje(char * id, messageType tipo){
+bool validarMensaje(char * id, messageType tipo, char* valor){
 	if (strlen(id) > 10){
 		return false;
 	}
 	if (tipo == (messageType) ERROR){
+		return false;
+	}
+	if (strlen(valor) > 985){
 		return false;
 	}
 	return true;
@@ -241,14 +244,14 @@ type_datosCliente Parser::parseXMLCliente(const char * nombreArchivo, Log* log) 
 		xml_node<> * nodo_valor = nodo_msj->first_node("valor");
 		valor = nodo_valor->value();
 
-		if (validarMensaje(id, tipo)) {
+		if (validarMensaje(id, tipo, valor)) {
 			strcpy(unMsj.id, id);
 			unMsj.tipo = tipo;
 			unMsj.valor = valor;
 			(*mensajes).insert(std::pair<int,type_mensaje>(i,unMsj));
 			i++;
 		} else {
-			log->writeErrorLine("mensaje cliente invalido");
+			log->writeErrorLine("Mensaje cliente invalido. Se toma el XML de default.");
 			return parseXMLCliente(getDefaultNameClient(), log);
 		}
 	}

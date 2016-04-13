@@ -1,0 +1,6 @@
+<Cliente>
+	<log>1</log>
+	<conexion>
+		<IP>192.168.1.1</IP>
+		<puerto>5001</puerto></conexion>
+</Cliente>
