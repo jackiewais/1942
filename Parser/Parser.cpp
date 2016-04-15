@@ -29,14 +29,25 @@ using namespace rapidxml;
 using namespace Parser;
 using namespace xercesc;
 
+char* toUpercase(char* tipo){
+	int i = 0;
+	char c;	
+	while (tipo[i]){
+		c = tipo[i];
+		tipo[i] = toupper(c);
+		i++;		
+	}
+	return tipo;
+}
+
 messageType formatTipoMsj(char * tipo) {
-	if (strcmp(tipo,"INT")==0 || strcmp(tipo,"INTEGER")==0)
+	if (strcmp(toUpercase(tipo),"INT")==0 || strcmp(toUpercase(tipo),"INTEGER")==0)
 		return INT;
-	if (strcmp(tipo,"STRING")==0 || strcmp(tipo,"STR")==0)
+	if (strcmp(toUpercase(tipo),"STRING")==0 || strcmp(toUpercase(tipo),"STR")==0)
 		return STRING;
-	if (strcmp(tipo,"CHAR")==0)
+	if (strcmp(toUpercase(tipo),"CHAR")==0)
 		return CHAR;
-	if (strcmp(tipo,"DOUBLE")==0)
+	if (strcmp(toUpercase(tipo),"DOUBLE")==0)
 		return DOUBLE;
 	return ERROR;
 }

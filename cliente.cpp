@@ -59,7 +59,7 @@ list<string> generateMenu(vector<struct mensaje> mensajes)
 
 	for (unsigned int i = 0; i< mensajes.size(); i++)
 	{
-		item = mensajes[i].Id;
+		item = "Enviar mensaje id: " + mensajes[i].Id + " - Tipo: " + mensajes[i].Tipo + " - Valor: " + mensajes[i].Valor;
 		menu.push_back(item);
 	}
 
@@ -126,7 +126,7 @@ int connect()
 		return 1;
 	} else {
  		struct timeval timeout;
-		 timeout.tv_sec = 60;
+		 timeout.tv_sec = 180;
 		 timeout.tv_usec = 0;
 
 		 if (setsockopt (socketCliente, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,sizeof(timeout)) < 0)
@@ -306,30 +306,33 @@ int loop()
 	}
 
 	//log.writeWarningLine("loop::iniciamos el ciclar.");
-	unsigned int duracion, i = 0;
-	time_t endwait;
+	double duracion, i = 0;
+	/*time_t endwait;
 	time_t start = time(NULL);
 	time_t seconds;
-
+	*/
+	clock_t start = clock();
+	double elapsedTime = 0;
 	cout << "Introduzca la duración del ciclo en milisegundos" << endl;
 	cin >> duracion;
 
 	cout << "-----" << std::endl;
 	cout << "Iniciamos la sentencia Ciclar:" << std::endl;
 
-	seconds = duracion/1000;
-	endwait = start + seconds;
+	//seconds = duracion/1000;
+	//endwait = start + seconds;
 
 	log.writeLine("Loop start time: " + string(ctime(&start)));
 
-	while ((start < endwait) && (isConnected)){
-		 //ciclo mensajes
+	while ((elapsedTime < duracion) && (isConnected)){
+		 //ciclo mensajesendwait
 		sendMessage(i);
 		i++;
 		if (i == listaMensajes.size())
 			i = 0;
+		elapsedTime = ((clock() - start)*3000)/(double)CLOCKS_PER_SEC;
 
-		start = time(NULL);
+		//start = time(NULL);
 	 }
 	if (!isConnected){
 		log.writeLine("El servidor está desconectado. Conéctelo para enviar mensajes");
@@ -444,7 +447,9 @@ int main(int argc, char *argv[])
 
 	while(myResponse >= 0)
 	{
+		cout << "-------------------------------------------------------------------" << endl;		
 		printMenu();
+		cout << "-------------------------------------------------------------------" << endl;		
 		cout << "Por favor, ingrese una de las siguientes opciones numéricas:" << endl;
 		cin >> input;
 		if (!cin){ //Validates if is a number

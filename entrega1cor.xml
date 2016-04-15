@@ -1,0 +1,106 @@
+<Cliente>
+	<log>1</log>
+	<conexion>
+		<IP>192.168.1.1</IP>
+		<puerto>5001</puerto></conexion>
+	<mensaje>
+		<id>1</id>
+		<tipo>INT</tipo>
+		<valor>31</valor></mensaje>
+	<mensaje>
+		<id>2</id>
+		<tipo>INT</tipo>
+		<valor>10</valor>
+	</mensaje>
+	<mensaje>
+		<id>3</id>
+		<tipo>INT</tipo>
+		<valor>-1973</valor>
+	</mensaje>
+	<mensaje>
+		<id>4</id>
+		<tipo>DOUBLE</tipo>
+		<valor>3.14</valor>
+	</mensaje>
+<mensaje>
+		<id>5</id>
+		<tipo>DOUBLE</tipo>
+		<valor>-3.14</valor>
+	</mensaje>
+<mensaje>
+		<id>6</id>
+		<tipo>CHAR</tipo>
+		<valor>E</valor>
+	</mensaje>
+<mensaje>
+		<id>7</id>
+		<tipo>STRING</tipo>
+		<valor>hola mundo</valor>
+	</mensaje>
+	<mensaje>
+		<id>8</id>
+		<tipo>DOUBLE</tipo>
+		<valor>127.02</valor>
+	</mensaje>
+	<mensaje>
+		<id>9</id>
+		<tipo>DOUBLE</tipo>
+		<valor>129.921</valor>
+	</mensaje>
+<mensaje>
+		<id>10</id>
+		<tipo>STRING</tipo>
+		<valor>false</valor>
+	</mensaje>
+<mensaje>
+		<id>11</id>
+		<tipo>INT</tipo>
+		<valor>-32768</valor>
+	</mensaje>
+<mensaje>
+		<id>12</id>
+		<tipo>INT</tipo>
+		<valor>32767</valor>
+	</mensaje>
+<mensaje>
+		<id>13</id>
+		<tipo>INT</tipo>
+		<valor>50000</valor>
+	</mensaje>
+<mensaje>
+		<id>14</id>
+		<tipo>STRING</tipo>
+		<valor>true</valor>
+	</mensaje>
+<mensaje>
+		<id>15</id>
+		<tipo>CHAR</tipo>
+		<valor>@</valor>
+	</mensaje>
+<mensaje>
+		<id>16</id>
+		<tipo>CHAR</tipo>
+		<valor>D</valor>
+	</mensaje>
+<mensaje>
+		<id>17</id>
+		<tipo>DOUBLE</tipo>
+		<valor>1.329</valor>
+	</mensaje>
+<mensaje>
+		<id>18</id>
+		<tipo>DOUBLE</tipo>
+		<valor>11e+23</valor>
+	</mensaje>
+<mensaje>
+		<id>19</id>
+		<tipo>INT</tipo>
+		<valor>2147483647</valor>
+	</mensaje>
+<mensaje>
+		<id>20</id>
+		<tipo>CHAR</tipo>
+		<valor>a</valor>
+	</mensaje>
+</Cliente>
+
