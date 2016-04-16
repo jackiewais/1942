@@ -44,7 +44,6 @@ enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
 // GENERAMOS LA ESTRUCTURA DEL MENU A UTILIZAR.
 list<string> generateMenu(vector<struct mensaje> mensajes)
 {
-	//log.writeWarningLine("generateMenu::arrancamos la generación del menu.");
 	list<string> menu;
 	string item;
 
@@ -65,7 +64,6 @@ list<string> generateMenu(vector<struct mensaje> mensajes)
 
 	item = "Ciclar";
 	menu.push_back(item);
-	//log.writeWarningLine("generateMenu::hemos generado el menu correctamente.");
 	return menu;
 }
 
@@ -73,7 +71,6 @@ list<string> generateMenu(vector<struct mensaje> mensajes)
 // IMPRIME LA PANTALLA DEL MENU PREVIAMENTE GENERADO.-
 void printMenu()
 {
-	//log.writeWarningLine("printMenu::arrancamos la impresión del menu.");
 	cout << std::endl;
 
 	int i = 1;
@@ -82,19 +79,17 @@ void printMenu()
     	cout << i << ") " << *j << std::endl;
     	i++;
     }
-	///log.writeWarningLine("printMenu::hemos generado el menu correctamente.");
+
 }
 
 
 // INVOCACIÓN A LA LÓGICA PARA CONECTARNOS AL SERVIDOR.
 int connect()
 {
-	//log.writeWarningLine("connect::comenzamos el intento de conectar.");
 	struct sockaddr_in server;
 
 	if (isConnected){
 		log.writeLine("El cliente ya fue conectado");
-		//log.writeWarningLine("connect::comenzamos el intento de conectar.");
 		return 0;
 	}
 
@@ -148,7 +143,6 @@ int connect()
 		}
 
 		log.writeLine("Conectado correctamente con el servidor");
-		//log.writeWarningLine("connect::terminamos el intento de conectar.");
 
 		isConnected = true;
 		return 0;
@@ -159,7 +153,6 @@ int connect()
 // INVOCACIÓN A LA LÓGICA PARA DESCONECTARNOS DEL SERVIDOR.
 int disconnect()
 {
-	//log.writeWarningLine("disconnect::comenzamos el intento de desconectar.");
 	if (!isConnected)
 	{
 		log.writeLine("El servidor ya está desconectado");
@@ -178,7 +171,6 @@ int disconnect()
 	close(socketCliente);
 	log.writeLine("Socket correctamente cerrado.");
 	isConnected = false;
-	//log.writeWarningLine("disconnect::terminamos el intento de desconectar.");
 	return 0;
 }
 
@@ -186,7 +178,6 @@ int disconnect()
 // MÉTODO QUE DEBE CERRAR TODAS LAS OPERACIONES INCONCLUSAS Y CERRAR LA APLICACIÓN PROLIJAMENTE.
 int finish()
 {
-	//log.writeWarningLine("finish::iniciamos la ejecución para finalizar.");
 	cout << "-----" << endl;
 	cout << "Terminamos la ejecución del programa." << endl;
 	cout << "-----" << endl;
@@ -195,7 +186,6 @@ int finish()
 	if (isConnected)
 		disconnect();
 
-	//log.writeWarningLine("finish::terminamos la ejecución para finalizar.");
 	return -1;
 }
 
@@ -203,7 +193,6 @@ int finish()
 // ENVIAMOS UN MENSAJE SEGÚN LA INFORMACIÓN OBTENIDA PREVIAMENTE DEL XML.
 int sendMessage(int nro)
 {
-	//log.writeWarningLine("sendMessage::iniciamos el envio de mensaje.");
 	if (!isConnected)
 		{
 			log.writeLine("El servidor está desconectado. Conéctelo para enviar mensajes");
@@ -225,12 +214,6 @@ int sendMessage(int nro)
 
 	int n;
 
-	/*cout << "-----" << std::endl;
-	cout << "Enviamos el mensaje: " << listaMensajes[nro].Id << endl;
-	cout << "Tipo:" << listaMensajes[nro].Tipo << endl;
-	cout << "Valor:" << listaMensajes[nro].Valor << endl;
-	cout << "-----" << endl;*/
-
 	// MANDO UN MENSAJE
 	log.writeLine("Enviando mensaje: ID: " + listaMensajes[nro].Id + " - Tipo: " + listaMensajes[nro].Tipo + " - Valor: " + listaMensajes[nro].Valor);
     memset(message,' ',messageSize);
@@ -240,11 +223,9 @@ int sendMessage(int nro)
     if (messageSize < 100){
     	temp[0] = '0';
     	strcpy(temp + 1, to_string(messageSize).c_str());
-    	//temp[1] = to_string(messageSize).c_str();
     }
     else
     	strcpy(temp, to_string(messageSize).c_str());
-    	//temp[0] = to_string(messageSize).c_str();
 
     strcpy(msgLength, temp);
 
@@ -266,23 +247,19 @@ int sendMessage(int nro)
 
     strcpy(msgData,listaMensajes[nro].Valor.c_str());
 
-	if( send(socketCliente , message , messageSize , 0) < 0)
-	{
+	if( send(socketCliente , message , messageSize , 0) < 0){
 		log.writeErrorLine("ERROR al enviar los datos...");
 		return 1;
-	} else {
-		log.writeLine("Datos enviados satisfactoriamente...");
 	}
 
 	// RECIBIENDO INFORMACION
-
 	char respuestaServer[256];
 	log.writeLine("Recibiendo información...");
 	bzero(respuestaServer,256);
 	n = recv(socketCliente, respuestaServer , 255 , 0);
-	if( n  < 0)
-	{
+	if( n  < 0){
 		log.writeErrorLine("ERROR al recibir los datos");
+		isConnected = false;
 		return 1;
 	}else if (n == 0){
 		//Server disconnected
@@ -292,7 +269,6 @@ int sendMessage(int nro)
 		log.writeLine("Recibimos la siguiente respuesta del servidor: " + string(respuestaServer));
 	}
 
-	//log.writeWarningLine("sendMessage::terminamos el envio de mensaje.");
 	return 0;
 }
 
@@ -305,7 +281,6 @@ int loop()
 		return 0;
 	}
 
-	//log.writeWarningLine("loop::iniciamos el ciclar.");
 	double duracion, i = 0;
 	/*time_t endwait;
 	time_t start = time(NULL);
@@ -342,7 +317,6 @@ int loop()
 	log.writeLine("Loop end time: " + string(ctime(&start)));
 
 	cout << "-----" << endl;
-	//log.writeWarningLine("loop:terminamos el ciclar.");
 	return 0;
 }
 
@@ -350,8 +324,7 @@ int loop()
 // SEGÚN LO QUE ELIJA EL USUARIO, PROCESAMOS UNA OPCIÓN U OTRA.
 int processInput(unsigned int input)
 {
-	//log.writeWarningLine("processInput::iniciamos el procesamiento sobre lo ingresado por el usuario");
-    int response;
+	int response;
 
     if ((input > listaMenu.size()) || (input < 1)){ //input no válido
     	log.writeErrorLine("Error: Introduzca una de las opciones indicadas");
@@ -367,7 +340,6 @@ int processInput(unsigned int input)
 	}else
 		response = sendMessage(input-4);
 
-	//log.writeWarningLine("processInput::terminamos el procesamiento sobre lo ingresado por el usuario");
 	return response;
 }
 
