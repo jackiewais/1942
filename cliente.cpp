@@ -1,7 +1,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <vector>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -14,77 +13,113 @@
 #include <sstream>
 #include "Logger/Log.h"
 #include "Parser/Parser.h"
+#include "Utils/messages.h"
+#include "Elemento/Elemento.h"
 #include <string>
 using namespace std;
 
+#define BUFLEN 1000
+
+
+
+void leerXML(){
+
+	Parser::type_datosCliente xml;
+
+	struct mensaje item;
+	string path;
+
+	cout << "Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
+	cin >> path;
+	if (path == "default"){
+		log.writeWarningLine("Se toma el XML de default");
+		path = Parser::getDefaultNameClient();
+	}
+
+	while (!Parser::fileExists(path.c_str())){
+		cout << "Ruta ingresada no válida. Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
+		cin >> path;
+		if (path == "default"){
+			log.writeWarningLine("Se toma el XML de default");
+			path = Parser::getDefaultNameClient();
+		}
+	}
+
+	xml = Parser::parseXMLCliente(path.c_str(), &log);
+
+	logLevel = xml.logLevel;
+	portNumber = xml.puerto;
+	ipChar = xml.ip;
+	/*
+	std::map<int,Parser::type_mensaje>::iterator parserIterator;
+	for (parserIterator = xml.mensajes->begin(); parserIterator != xml.mensajes->end(); ++parserIterator)
+	{
+		const char* sTipo = ToString(parserIterator->second.tipo);
+
+	    std::ostringstream ostr;
+	    ostr << parserIterator->second.id;
+	    std::string sId = ostr.str();
+
+	    std::ostringstream ostr2;
+	    ostr2 << parserIterator->second.valor;
+	    std::string sValor = ostr2.str();
+
+		item.Id = sId;
+		item.Tipo = sTipo;
+		item.Valor = sValor;
+		listaMensajes.push_back(item);
+	}
+	*/
+}
+
 // ==============================================================================
 
-struct  mensaje {
-    string Id;
-    string Tipo;
-    string Valor;
-};
 
 unsigned short portNumber;
 unsigned short logLevel;
+unsigned short clientId;
 string ipChar;
-bool isConnected;
-
+bool isConnected, isRunning;
 Log log;
-
-list<string> listaMenu;
-vector<struct mensaje> listaMensajes;
-
 int socketCliente;
 
 enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
 // ==============================================================================
 
 
-// GENERAMOS LA ESTRUCTURA DEL MENU A UTILIZAR.
-list<string> generateMenu(vector<struct mensaje> mensajes)
-{
-	list<string> menu;
-	string item;
+int receiveMsg(char* buffer){
 
-	item = "Conectar";
-	menu.push_back(item);
 
-	item = "Desconectar";
-	menu.push_back(item);
+	char msgLenChar[3];
+	int msgLen, rcvLen;
 
-	item = "Salir";
-	menu.push_back(item);
-
-	for (unsigned int i = 0; i< mensajes.size(); i++)
-	{
-		item = "Enviar mensaje id: " + mensajes[i].Id + " - Tipo: " + mensajes[i].Tipo + " - Valor: " + mensajes[i].Valor;
-		menu.push_back(item);
+	rcvLen = recv(socketCliente, buffer, BUFLEN -1 , 0);
+	if( rcvLen < 0){
+		log.writeErrorLine("ERROR al recibir la respuesta. El servidor no responde");
+		return 1;
 	}
 
-	item = "Ciclar";
-	menu.push_back(item);
-	return menu;
-}
 
+	memcpy(msgLenChar, buffer, 3);
+	msgLen = stoi(msgLenChar, nullptr);
 
-// IMPRIME LA PANTALLA DEL MENU PREVIAMENTE GENERADO.-
-void printMenu()
-{
-	cout << std::endl;
+	if (rcvLen == msgLen){//full message received.
+		return 0;
+	}else{//message incomplete.
+		int readed = rcvLen;
+		while ( readed != msgLen){
+			rcvLen = recv(socketCliente, buffer+readed, msgLen-readed, 0);
+			readed += rcvLen;
+		}
 
-	int i = 1;
-	for (list<string>::iterator j = listaMenu.begin(); j != listaMenu.end(); j++)
-	{
-    	cout << i << ") " << *j << std::endl;
-    	i++;
-    }
+	}
 
+	return 0;
 }
 
 
 // INVOCACIÓN A LA LÓGICA PARA CONECTARNOS AL SERVIDOR.
-int connect()
+int connect(map<int,Elemento*> &elementos)
 {
 	struct sockaddr_in server;
 
@@ -130,21 +165,42 @@ int connect()
 		 if (setsockopt (socketCliente, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout)) < 0)
 		 	log.writeErrorLine("ERROR setting socket snd timeout");
 
-		char respuestaServer[256];
-		memset(respuestaServer,0,256);
-		if( recv(socketCliente, respuestaServer , 255 , 0) < 0)
-		{
-			log.writeErrorLine("ERROR al recibir la respuesta");
+		char respuestaServer[BUFLEN];
+		memset(respuestaServer,0,BUFLEN);
+
+		if (receiveMsg(respuestaServer) != 0)
+			return 1;
+
+		int msgQty;
+		struct gst** msgArray;
+
+		msgQty = decodeMessages(&msgArray, respuestaServer);
+		if (msgQty == -1){
+			log.writeErrorLine("ERROR al decodificar la respuesta del servidor"
+					+ string(respuestaServer));
 			return 1;
 		}
-		if (strncmp(respuestaServer, "ERROR", 5) == 0){
-			log.writeErrorLine("ERROR al conectar con el servidor:" + string(respuestaServer));
+
+		// el primer mensaje recibidio del server tiene que ser de control con el status de la
+		// conexion CON_SUCCESS o CON_FAIL
+
+		if (msgArray[0] -> type[0] != msgType::CONTROL){
+			log.writeErrorLine("ERROR respuesta del servidor incorrecta"
+								+ string(respuestaServer));
 			return 1;
+		}
+		else if (msgArray[0] -> info[0] == (char)command::CON_FAIL){
+			log.writeErrorLine("ERROR al conectar con el servidor: conexion rechazada");
+			return 1;
+
 		}
 
 		log.writeLine("Conectado correctamente con el servidor");
-
+		clientId = atoi(msgArray[0] -> id);
+		msgArray++;
+		processMessages(elementos, msgArray, msgQty - 1);
 		isConnected = true;
+
 		return 0;
 	}
 }
@@ -164,10 +220,15 @@ int disconnect()
 	cout << "-----" << endl;
 
 	// ENVÍO MENSAJE DE EXIT Y CIERRO SOCKET
-	char message[256];
-	memset(message,0,256);
-	message[0]= 'q';
-	send(socketCliente , message , strlen(message) , 0);
+
+	struct gst* exitMsg;
+	char* buffer;
+	int bufferLen;
+
+	exitMsg = genAdminGst(clientId, command::DISCONNECT);
+	bufferLen = encodeMessages(&buffer, &exitMsg, 1);
+
+	send(socketCliente , buffer , bufferLen , 0);
 	close(socketCliente);
 	log.writeLine("Socket correctamente cerrado.");
 	isConnected = false;
@@ -190,249 +251,60 @@ int finish()
 }
 
 
-// ENVIAMOS UN MENSAJE SEGÚN LA INFORMACIÓN OBTENIDA PREVIAMENTE DEL XML.
-int sendMessage(int nro)
-{
-	if (!isConnected)
-		{
-			log.writeLine("El servidor está desconectado. Conéctelo para enviar mensajes");
-			return 0;
+void interchangeStatus(map<int,Elemento*> &elementos){
+
+	char *bufferSnd, bufferRcv[BUFLEN];
+	struct gst* sndMsg, ** rcvMsgs;
+	int bufferSndLen, rcvMsgsQty;
+
+	sndMsg = genUpdateGstFromElemento(elementos[clientId]);
+	bufferSndLen = encodeMessages(&bufferSnd, &sndMsg, 1);
+
+	send(socketCliente,bufferSnd,bufferSndLen,0);
+
+	memset(bufferRcv,0,BUFLEN);
+	if (receiveMsg(bufferRcv) == 0){
+		rcvMsgsQty = decodeMessages(&rcvMsgs, bufferRcv);
+
+		if (rcvMsgsQty != -1){
+			processMessages(elementos, rcvMsgs, rcvMsgsQty);
 		}
 
-	int lengthLength = 3;
-	int idLength = 10;
-	int typeLength = 1;
-	int messageSize = lengthLength + idLength + typeLength +
-			listaMensajes[nro].Valor.size();
-
-	char message[messageSize + 1];
-	char *temp;
-	char *msgLength = message;
-	char *msgId = message + lengthLength;
-	char *msgType = msgId + idLength;
-	char *msgData = msgType + typeLength;
-
-	int n;
-
-	// MANDO UN MENSAJE
-	log.writeLine("Enviando mensaje: ID: " + listaMensajes[nro].Id + " - Tipo: " + listaMensajes[nro].Tipo + " - Valor: " + listaMensajes[nro].Valor);
-    memset(message,' ',messageSize);
-
-    temp = new char[lengthLength + 1];
-
-    if (messageSize < 100){
-    	temp[0] = '0';
-    	strcpy(temp + 1, to_string(messageSize).c_str());
-    }
-    else
-    	strcpy(temp, to_string(messageSize).c_str());
-
-    strcpy(msgLength, temp);
-
-    delete[] temp;
-
-    strcpy(msgId,listaMensajes[nro].Id.c_str());
-    memset(msgId + listaMensajes[nro].Id.size(), ' ', idLength - listaMensajes[nro].Id.size());
-
-    if (listaMensajes[nro].Tipo.compare("STRING") == 0)
-    	*msgType = 's';
-    else if (listaMensajes[nro].Tipo.compare("INT") == 0)
-    	*msgType = 'i';
-    else if (listaMensajes[nro].Tipo.compare("DOUBLE") == 0)
-    	*msgType = 'd';
-    else if (listaMensajes[nro].Tipo.compare("CHAR") == 0)
-    	*msgType = 'c';
-    else
-    	return -1;
-
-    strcpy(msgData,listaMensajes[nro].Valor.c_str());
-
-	if( send(socketCliente , message , messageSize , 0) < 0){
-		log.writeErrorLine("ERROR al enviar los datos...");
-		return 1;
 	}
 
-	// RECIBIENDO INFORMACION
-	char respuestaServer[256];
-	log.writeLine("Recibiendo información...");
-	bzero(respuestaServer,256);
-	n = recv(socketCliente, respuestaServer , 255 , 0);
-	if( n  < 0){
-		log.writeErrorLine("ERROR al recibir los datos");
-		isConnected = false;
-		return 1;
-	}else if (n == 0){
-		//Server disconnected
-		log.writeErrorLine("ERROR: El servidor está desconectado");
-		isConnected = false;
-	}else{
-		log.writeLine("Recibimos la siguiente respuesta del servidor: " + string(respuestaServer));
-	}
-
-	return 0;
 }
 
 
-// CICLAMOS PARA EJECUTAR LOS DIFERENTES MENSAJES QUE PUEDEN ESTAR EN EL XML.
-int loop()
-{
-	if (listaMensajes.size() == 0){
-		log.writeWarningLine("WARNING: No hay ningún mensaje definido");
-		return 0;
-	}
+void processMessages(map<int,Elemento*> &elementos, struct gst** rcvMsgsQty, int msgsQty){
 
-	double duracion, i = 0;
-	/*time_t endwait;
-	time_t start = time(NULL);
-	time_t seconds;
-	*/
-	clock_t start = clock();
-	double elapsedTime = 0;
-	cout << "Introduzca la duración del ciclo en milisegundos" << endl;
-	cin >> duracion;
+	//TODO
 
-	cout << "-----" << std::endl;
-	cout << "Iniciamos la sentencia Ciclar:" << std::endl;
-
-	//seconds = duracion/1000;
-	//endwait = start + seconds;
-
-	log.writeLine("Loop start time: " + string(ctime(&start)));
-
-	while ((elapsedTime < duracion) && (isConnected)){
-		 //ciclo mensajesendwait
-		sendMessage(i);
-		i++;
-		if (i == listaMensajes.size())
-			i = 0;
-		elapsedTime = ((clock() - start)*3000)/(double)CLOCKS_PER_SEC;
-
-		//start = time(NULL);
-	 }
-	if (!isConnected){
-		log.writeLine("El servidor está desconectado. Conéctelo para enviar mensajes");
-		return 0;
-	}
-
-	log.writeLine("Loop end time: " + string(ctime(&start)));
-
-	cout << "-----" << endl;
-	return 0;
 }
 
-
-// SEGÚN LO QUE ELIJA EL USUARIO, PROCESAMOS UNA OPCIÓN U OTRA.
-int processInput(unsigned int input)
-{
-	int response;
-
-    if ((input > listaMenu.size()) || (input < 1)){ //input no válido
-    	log.writeErrorLine("Error: Introduzca una de las opciones indicadas");
-    	response = 1;
-    }else if(input == 1)
-		response = connect();
-	else if (input == 2)
-		response = disconnect();
-	else if (input == 3)
-		response = finish();
-	else if(input == listaMenu.size()){
-		response = loop();
-	}else
-		response = sendMessage(input-4);
-
-	return response;
-}
-
-inline const char* ToString(Parser::messageType v)
-{
-    switch (v)
-    {
-        case CHAR:   return "CHAR";
-        case INT:   return "INT";
-        case DOUBLE: return "DOUBLE";
-        case STRING: return "STRING";
-        default:      return "ERROR";
-    }
-}
-
-void leerXML(){
-
-	Parser::type_datosCliente xml;
-
-	struct mensaje item;
-	string path;
-
-	cout << "Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
-	cin >> path;
-	if (path == "default"){
-		log.writeWarningLine("Se toma el XML de default");
-		path = Parser::getDefaultNameClient();
-	}
-
-	while (!Parser::fileExists(path.c_str())){
-		cout << "Ruta ingresada no válida. Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
-		cin >> path;
-		if (path == "default"){
-			log.writeWarningLine("Se toma el XML de default");
-			path = Parser::getDefaultNameClient();
-		}
-	}
-
-	xml = Parser::parseXMLCliente(path.c_str(), &log);
-
-	logLevel = xml.logLevel;
-	portNumber = xml.puerto;
-	ipChar = xml.ip;
-
-	std::map<int,Parser::type_mensaje>::iterator parserIterator;
-	for (parserIterator = xml.mensajes->begin(); parserIterator != xml.mensajes->end(); ++parserIterator)
-	{
-		const char* sTipo = ToString(parserIterator->second.tipo);
-
-	    std::ostringstream ostr;
-	    ostr << parserIterator->second.id;
-	    std::string sId = ostr.str();
-
-	    std::ostringstream ostr2;
-	    ostr2 << parserIterator->second.valor;
-	    std::string sValor = ostr2.str();
-
-		item.Id = sId;
-		item.Tipo = sTipo;
-		item.Valor = sValor;
-		listaMensajes.push_back(item);
-	}
-}
 
 int main(int argc, char *argv[])
 {
 	int input;
 	int myResponse = 0;
 	isConnected = false;
+	isRunning = false;
+	map<int,Elemento*> elementos;
+
 
 	// Inicializar el log.
 	log.createFile(3);
 
 	leerXML();
 
-	listaMenu = generateMenu(listaMensajes);
+	connect(elementos);
 
-	while(myResponse >= 0)
+	//elementos[clientId] es el elemento controlado por el cliente
+	//dettachGraphicsThread(elementos, elementos[clientId]);
+	isRunning = true;
+	while(isRunning)
 	{
-		cout << "-------------------------------------------------------------------" << endl;		
-		printMenu();
-		cout << "-------------------------------------------------------------------" << endl;		
-		cout << "Por favor, ingrese una de las siguientes opciones numéricas:" << endl;
-		cin >> input;
-		if (!cin){ //Validates if is a number
-			cout << "Error: Debe ingresar un número" << endl;
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			myResponse = 1;
-		}else
-			myResponse = processInput(input);
+		interchangeStatus(elementos);
 	}
-
 	if (isConnected)
 		disconnect();
 

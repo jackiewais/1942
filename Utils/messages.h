@@ -74,7 +74,10 @@ enum msgType:char{
 enum command:char{
 	START = 's',
 	RESTART = 'r',
-	PAUSE = 'p'
+	PAUSE = 'p',
+	CON_SUCCESS = 's',
+	CON_FAIL = 'f',
+	DISCONNECT = 'q'
 };
 
 /* En *msgs crea un array de punteros a gst's. Se accede a los gst como *((*msgs)[n])
