@@ -16,6 +16,7 @@
 #include "Utils/messages.h"
 #include "Elemento/Elemento.h"
 #include <string>
+#include <cstring>
 using namespace std;
 
 #define BUFLEN 1000
@@ -33,6 +34,7 @@ int socketCliente;
 
 enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
 // ==============================================================================
+
 
 
 void leerXML(){
@@ -86,7 +88,6 @@ void leerXML(){
 }
 
 
-
 int receiveMsg(char* buffer){
 
 
@@ -122,6 +123,9 @@ void processMessages(map<int,Elemento*> &elementos, struct gst** rcvMsgsQty, int
 	//TODO
 
 }
+
+
+
 
 
 // INVOCACIÓN A LA LÓGICA PARA CONECTARNOS AL SERVIDOR.
@@ -281,7 +285,19 @@ void interchangeStatus(map<int,Elemento*> &elementos){
 }
 
 
+void mostrarLogIn() {
+	string puertoS;
 
+	cout << "--- Log in ---" << endl;
+	cout << "Por favor ingrese los siguientes datos: " << endl;
+	cout << "User name: " << endl;
+	cin >> userName;
+	cout << "Ip: " << endl;
+	cin >> ipChar;
+	cout << "Puerto: " << endl;
+	cin >> puertoS;
+	portNumber = stoi(puertoS);
+}
 
 
 int main(int argc, char *argv[])
@@ -295,8 +311,8 @@ int main(int argc, char *argv[])
 	// Inicializar el log.
 	log.createFile(3);
 
-	leerXML();
-
+//	leerXML();
+	mostrarLogIn();
 	connect(elementos);
 
 	//elementos[clientId] es el elemento controlado por el cliente
