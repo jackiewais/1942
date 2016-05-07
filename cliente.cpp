@@ -16,61 +16,12 @@
 #include "Utils/messages.h"
 #include "Elemento/Elemento.h"
 #include <string>
+#include <cstring>
 using namespace std;
 
 #define BUFLEN 1000
 
 
-
-void leerXML(){
-
-	Parser::type_datosCliente xml;
-
-	struct mensaje item;
-	string path;
-
-	cout << "Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
-	cin >> path;
-	if (path == "default"){
-		log.writeWarningLine("Se toma el XML de default");
-		path = Parser::getDefaultNameClient();
-	}
-
-	while (!Parser::fileExists(path.c_str())){
-		cout << "Ruta ingresada no válida. Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
-		cin >> path;
-		if (path == "default"){
-			log.writeWarningLine("Se toma el XML de default");
-			path = Parser::getDefaultNameClient();
-		}
-	}
-
-	xml = Parser::parseXMLCliente(path.c_str(), &log);
-
-	logLevel = xml.logLevel;
-	portNumber = xml.puerto;
-	ipChar = xml.ip;
-	/*
-	std::map<int,Parser::type_mensaje>::iterator parserIterator;
-	for (parserIterator = xml.mensajes->begin(); parserIterator != xml.mensajes->end(); ++parserIterator)
-	{
-		const char* sTipo = ToString(parserIterator->second.tipo);
-
-	    std::ostringstream ostr;
-	    ostr << parserIterator->second.id;
-	    std::string sId = ostr.str();
-
-	    std::ostringstream ostr2;
-	    ostr2 << parserIterator->second.valor;
-	    std::string sValor = ostr2.str();
-
-		item.Id = sId;
-		item.Tipo = sTipo;
-		item.Valor = sValor;
-		listaMensajes.push_back(item);
-	}
-	*/
-}
 
 // ==============================================================================
 
@@ -82,6 +33,7 @@ string ipChar;
 bool isConnected, isRunning;
 Log log;
 int socketCliente;
+string userName;
 
 enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
 // ==============================================================================
@@ -115,6 +67,14 @@ int receiveMsg(char* buffer){
 	}
 
 	return 0;
+}
+
+
+
+void processMessages(map<int,Elemento*> &elementos, struct gst** rcvMsgsQty, int msgsQty){
+
+	//TODO
+
 }
 
 
@@ -275,10 +235,69 @@ void interchangeStatus(map<int,Elemento*> &elementos){
 }
 
 
-void processMessages(map<int,Elemento*> &elementos, struct gst** rcvMsgsQty, int msgsQty){
+void leerXML(){
 
-	//TODO
+	Parser::type_datosCliente xml;
 
+//	struct mensaje item;
+	string path;
+
+	cout << "Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
+	cin >> path;
+	if (path == "default"){
+		log.writeWarningLine("Se toma el XML de default");
+		path = Parser::getDefaultNameClient();
+	}
+
+	while (!Parser::fileExists(path.c_str())){
+		cout << "Ruta ingresada no válida. Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
+		cin >> path;
+		if (path == "default"){
+			log.writeWarningLine("Se toma el XML de default");
+			path = Parser::getDefaultNameClient();
+		}
+	}
+
+	xml = Parser::parseXMLCliente(path.c_str(), &log);
+
+	logLevel = xml.logLevel;
+	portNumber = xml.puerto;
+	ipChar = xml.ip;
+	/*
+	std::map<int,Parser::type_mensaje>::iterator parserIterator;
+	for (parserIterator = xml.mensajes->begin(); parserIterator != xml.mensajes->end(); ++parserIterator)
+	{
+		const char* sTipo = ToString(parserIterator->second.tipo);
+
+	    std::ostringstream ostr;
+	    ostr << parserIterator->second.id;
+	    std::string sId = ostr.str();
+
+	    std::ostringstream ostr2;
+	    ostr2 << parserIterator->second.valor;
+	    std::string sValor = ostr2.str();
+
+		item.Id = sId;
+		item.Tipo = sTipo;
+		item.Valor = sValor;
+		listaMensajes.push_back(item);
+	}
+	*/
+}
+
+
+void mostrarLogIn() {
+	string puertoS;
+
+	cout << "--- Log in ---" << endl;
+	cout << "Por favor ingrese los siguientes datos: " << endl;
+	cout << "User name: " << endl;
+	cin >> userName;
+	cout << "Ip: " << endl;
+	cin >> ipChar;
+	cout << "Puerto: " << endl;
+	cin >> puertoS;
+	portNumber = stoi(puertoS);
 }
 
 
@@ -294,8 +313,8 @@ int main(int argc, char *argv[])
 	// Inicializar el log.
 	log.createFile(3);
 
-	leerXML();
-
+//	leerXML();
+	mostrarLogIn();
 	connect(elementos);
 
 	//elementos[clientId] es el elemento controlado por el cliente
