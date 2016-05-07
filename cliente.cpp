@@ -31,6 +31,7 @@ string ipChar;
 bool isConnected, isRunning;
 Log log;
 int socketCliente;
+char userName[50];
 
 enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
 // ==============================================================================
