@@ -20,13 +20,26 @@ using namespace std;
 
 #define BUFLEN 1000
 
+// ==============================================================================
+
+
+unsigned short portNumber;
+unsigned short logLevel;
+unsigned short clientId;
+string ipChar;
+bool isConnected, isRunning;
+Log log;
+int socketCliente;
+
+enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
+// ==============================================================================
 
 
 void leerXML(){
 
 	Parser::type_datosCliente xml;
 
-	struct mensaje item;
+	//struct mensaje item;
 	string path;
 
 	cout << "Por favor, ingrese el nombre del archivo xml a utilizar o 'default' para usar el de defecto" << endl;
@@ -72,19 +85,6 @@ void leerXML(){
 	*/
 }
 
-// ==============================================================================
-
-
-unsigned short portNumber;
-unsigned short logLevel;
-unsigned short clientId;
-string ipChar;
-bool isConnected, isRunning;
-Log log;
-int socketCliente;
-
-enum messageType {CHAR, INT, DOUBLE, STRING, ERROR};
-// ==============================================================================
 
 
 int receiveMsg(char* buffer){
@@ -115,6 +115,12 @@ int receiveMsg(char* buffer){
 	}
 
 	return 0;
+}
+
+void processMessages(map<int,Elemento*> &elementos, struct gst** rcvMsgsQty, int msgsQty){
+
+	//TODO
+
 }
 
 
@@ -275,17 +281,12 @@ void interchangeStatus(map<int,Elemento*> &elementos){
 }
 
 
-void processMessages(map<int,Elemento*> &elementos, struct gst** rcvMsgsQty, int msgsQty){
 
-	//TODO
-
-}
 
 
 int main(int argc, char *argv[])
 {
-	int input;
-	int myResponse = 0;
+
 	isConnected = false;
 	isRunning = false;
 	map<int,Elemento*> elementos;
