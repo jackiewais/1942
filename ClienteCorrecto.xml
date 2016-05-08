@@ -2,7 +2,8 @@
 	<log>1</log>
 	<conexion>
 		<IP>192.168.0.1</IP>
-		<puerto>15636</puerto></conexion>
+		<puerto>15636</puerto>
+	</conexion>
 	<mensaje>
 		<id>Mensaje1</id>
 		<tipo>INT</tipo>
@@ -21,4 +22,5 @@
 		<id>Mensaje4</id>
 		<tipo>INT</tipo>
 		<valor>10</valor>
-	</mensaje></Cliente>
+	</mensaje>
+</Cliente>
